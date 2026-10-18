@@ -1,0 +1,117 @@
+{
+  "common": {
+    "appName": "PromptShelf",
+    "untitled": "Атаусыз",
+    "loading": "Жүктелуде...",
+    "error": "Қате",
+    "close": "Жабу",
+    "cancel": "Бас тарту",
+    "delete": "Жою",
+    "save": "Сақтау",
+    "edit": "Өңдеу"
+  },
+  "nav": {
+    "library": "Кітапхана",
+    "collections": "Жинақтар",
+    "tags": "Тегтер",
+    "import": "Импорт",
+    "assistant": "Ассистент",
+    "export": "Экспорт",
+    "settings": "Баптаулар",
+    "search": "Іздеу",
+    "newItem": "Жаңа элемент",
+    "mainNav": "Негізгі шарлау",
+    "mobileNav": "Мобильді шарлау",
+    "more": "Тағы",
+    "about": "Жоба туралы",
+    "home": "Басты бет",
+    "openApp": "Қолданбаны ашу",
+    "skipToContent": "Мазмұнға өту"
+  },
+  "meta": {
+    "tagline": "AI промпттарыңызды сақтаңыз, реттеңіз және экспорттаңыз"
+  },
+  "footer": {
+    "tagline": "AI промпттары мен чаттарыңызға арналған жеке кітапханаңыз.",
+    "product": "Өнім",
+    "resources": "Ресурстар",
+    "faq": "Жиі қойылатын сұрақтар",
+    "rights": "© {{year}} PromptShelf. Барлық құқықтар қорғалған."
+  },
+  "library": {
+    "title": "Кітапхана",
+    "description": "Барлық сақталған промпттар мен чаттар бір жерде.",
+    "count": "{{count}} элемент",
+    "searchLabel": "Элементтерді іздеу",
+    "searchPlaceholder": "Тақырып, промпт немесе жазбалар бойынша іздеу...",
+    "filters": "Сүзгілер",
+    "filterCategory": "Санат бойынша сүзу",
+    "allCategories": "Барлық санаттар",
+    "filterCollection": "Жинақ бойынша сүзу",
+    "allCollections": "Барлық жинақтар",
+    "filterSource": "Дереккөз бойынша сүзу",
+    "allSources": "Барлық дереккөздер",
+    "sort": "Сұрыптау",
+    "sortBy": {
+      "updated": "Жақында жаңартылған",
+      "newest": "Алдымен жаңалары",
+      "oldest": "Алдымен ескілері",
+      "title": "Әліпби бойынша"
+    },
+    "favorites": "Таңдаулылар",
+    "clearFilters": "Тазалау",
+    "filterTag": "Тег бойынша сүзу",
+    "selectAll": "Барлығын таңдау",
+    "selected": "{{count}} таңдалды",
+    "bulkFavorite": "Таңдаулыға қосу",
+    "bulkAddToCollection": "Жинаққа қосу",
+    "bulkAddTag": "Тег қосу",
+    "clearSelection": "Таңдауды тазалау",
+    "emptyTitle": "Кітапханаңыз бос",
+    "emptyBody": "Жаңа элемент жасаудан немесе чат тарихын импорттаудан бастаңыз.",
+    "emptyFilteredTitle": "Элементтер табылмады",
+    "emptyFilteredBody": "Сүзгілерді немесе іздеу сұрауын өзгертіп көріңіз.",
+    "deleteTitle": "{{count}} элементті жою",
+    "deleteBody": "Сенімдісіз бе? Бұл әрекетті қайтару мүмкін емес.",
+    "deleted": "{{count}} элемент жойылды",
+    "view": "Көрініс",
+    "viewList": "Тізім",
+    "viewGrid": "Тор",
+    "selectItem": "{{title}} таңдау",
+    "bulkFavorited": "{{count}} элемент таңдаулыға қосылды",
+    "bulkAdded": "{{count}} элемент {{name}} жинағына қосылды",
+    "bulkTagged": "{{name}} тегі {{count}} элементке қосылды"
+  },
+  "palette": {
+    "title": "Командалық палитра",
+    "placeholder": "Команда енгізіңіз немесе іздеңіз...",
+    "newItem": "Жаңа элемент",
+    "newCollection": "Жаңа жинақ",
+    "groupActions": "Әрекеттер",
+    "groupNavigation": "Шарлау",
+    "groupItems": "Элементтер",
+    "toggleTheme": "Тақырыпты өзгерту",
+    "noResults": "Нәтиже табылмады",
+    "hintNavigate": "Шарлау",
+    "hintSelect": "Таңдау"
+  },
+  "header": {
+    "language": "Тіл",
+    "themeToLight": "Ашық тақырыпқа ауысу",
+    "themeToDark": "Қараңғы тақырыпқа ауысу"
+  },
+  "languages": {
+    "en": "English",
+    "ru": "Русский",
+    "kk": "Қазақша"
+  },
+  "sources": {
+    "chatgpt": "ChatGPT",
+    "claude": "Claude",
+    "gemini": "Gemini",
+    "other": "Басқа"
+  },
+  "editor": {
+    "removeTag": "{{name}} тегін алып тастау"
+  }
+}

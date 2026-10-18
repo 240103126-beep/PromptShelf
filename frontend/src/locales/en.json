@@ -1,0 +1,117 @@
+{
+  "common": {
+    "appName": "PromptShelf",
+    "untitled": "Untitled",
+    "loading": "Loading...",
+    "error": "Error",
+    "close": "Close",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "save": "Save",
+    "edit": "Edit"
+  },
+  "nav": {
+    "library": "Library",
+    "collections": "Collections",
+    "tags": "Tags",
+    "import": "Import",
+    "assistant": "Assistant",
+    "export": "Export",
+    "settings": "Settings",
+    "search": "Search",
+    "newItem": "New Item",
+    "mainNav": "Main navigation",
+    "mobileNav": "Mobile navigation",
+    "more": "More",
+    "about": "About",
+    "home": "Home",
+    "openApp": "Open App",
+    "skipToContent": "Skip to content"
+  },
+  "meta": {
+    "tagline": "Save, organize and export your AI prompts"
+  },
+  "footer": {
+    "tagline": "Your personal library for AI prompts and chats. Stay organized across every model.",
+    "product": "Product",
+    "resources": "Resources",
+    "faq": "FAQ",
+    "rights": "© {{year}} PromptShelf. All rights reserved."
+  },
+  "library": {
+    "title": "Library",
+    "description": "All your saved prompts and chats in one place.",
+    "count": "{{count}} items",
+    "searchLabel": "Search items",
+    "searchPlaceholder": "Filter by title, prompt or notes...",
+    "filters": "Filters",
+    "filterCategory": "Filter by category",
+    "allCategories": "All Categories",
+    "filterCollection": "Filter by collection",
+    "allCollections": "All Collections",
+    "filterSource": "Filter by source",
+    "allSources": "All Sources",
+    "sort": "Sort",
+    "sortBy": {
+      "updated": "Recently Updated",
+      "newest": "Newest First",
+      "oldest": "Oldest First",
+      "title": "Alphabetical"
+    },
+    "favorites": "Favorites",
+    "clearFilters": "Clear",
+    "filterTag": "Filter by tag",
+    "selectAll": "Select All",
+    "selected": "{{count}} selected",
+    "bulkFavorite": "Favorite",
+    "bulkAddToCollection": "Add to Collection",
+    "bulkAddTag": "Add Tag",
+    "clearSelection": "Clear selection",
+    "emptyTitle": "Your library is empty",
+    "emptyBody": "Start by creating a new item or importing from a chat history.",
+    "emptyFilteredTitle": "No items found",
+    "emptyFilteredBody": "Try adjusting your filters or search query.",
+    "deleteTitle": "Delete {{count}} items",
+    "deleteBody": "Are you sure? This action cannot be undone.",
+    "deleted": "Deleted {{count}} items",
+    "view": "View",
+    "viewList": "List view",
+    "viewGrid": "Grid view",
+    "selectItem": "Select {{title}}",
+    "bulkFavorited": "Favorited {{count}} items",
+    "bulkAdded": "Added {{count}} items to {{name}}",
+    "bulkTagged": "Added tag {{name}} to {{count}} items"
+  },
+  "palette": {
+    "title": "Command Palette",
+    "placeholder": "Type a command or search...",
+    "newItem": "New Item",
+    "newCollection": "New Collection",
+    "groupActions": "Actions",
+    "groupNavigation": "Navigation",
+    "groupItems": "Items",
+    "toggleTheme": "Toggle Theme",
+    "noResults": "No results found",
+    "hintNavigate": "Navigate",
+    "hintSelect": "Select"
+  },
+  "header": {
+    "language": "Language",
+    "themeToLight": "Switch to light theme",
+    "themeToDark": "Switch to dark theme"
+  },
+  "languages": {
+    "en": "English",
+    "ru": "Russian",
+    "kk": "Kazakh"
+  },
+  "sources": {
+    "chatgpt": "ChatGPT",
+    "claude": "Claude",
+    "gemini": "Gemini",
+    "other": "Other"
+  },
+  "editor": {
+    "removeTag": "Remove {{name}}"
+  }
+}

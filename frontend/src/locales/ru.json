@@ -1,0 +1,122 @@
+{
+  "common": {
+    "appName": "PromptShelf",
+    "untitled": "Без названия",
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "close": "Закрыть",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "save": "Сохранить",
+    "edit": "Изменить"
+  },
+  "nav": {
+    "library": "Библиотека",
+    "collections": "Коллекции",
+    "tags": "Теги",
+    "import": "Импорт",
+    "assistant": "Ассистент",
+    "export": "Экспорт",
+    "settings": "Настройки",
+    "search": "Поиск",
+    "newItem": "Новый элемент",
+    "mainNav": "Основная навигация",
+    "mobileNav": "Мобильная навигация",
+    "more": "Ещё",
+    "about": "О проекте",
+    "home": "Главная",
+    "openApp": "Открыть приложение",
+    "skipToContent": "Перейти к содержимому"
+  },
+  "meta": {
+    "tagline": "Сохраняйте, организуйте и экспортируйте ваши AI промпты"
+  },
+  "footer": {
+    "tagline": "Ваша личная библиотека для AI промптов и чатов.",
+    "product": "Продукт",
+    "resources": "Ресурсы",
+    "faq": "Частые вопросы",
+    "rights": "© {{year}} PromptShelf. Все права защищены."
+  },
+  "library": {
+    "title": "Библиотека",
+    "description": "Все ваши сохраненные промпты и чаты в одном месте.",
+    "count": {
+      "one": "{{count}} элемент",
+      "few": "{{count}} элемента",
+      "many": "{{count}} элементов",
+      "other": "{{count}} элементов"
+    },
+    "searchLabel": "Поиск элементов",
+    "searchPlaceholder": "Поиск по названию, промпту или заметкам...",
+    "filters": "Фильтры",
+    "filterCategory": "Фильтр по категории",
+    "allCategories": "Все категории",
+    "filterCollection": "Фильтр по коллекции",
+    "allCollections": "Все коллекции",
+    "filterSource": "Фильтр по источнику",
+    "allSources": "Все источники",
+    "sort": "Сортировка",
+    "sortBy": {
+      "updated": "Недавно обновленные",
+      "newest": "Сначала новые",
+      "oldest": "Сначала старые",
+      "title": "По алфавиту"
+    },
+    "favorites": "Избранное",
+    "clearFilters": "Сбросить",
+    "filterTag": "Фильтр по тегу",
+    "selectAll": "Выбрать всё",
+    "selected": "Выбрано: {{count}}",
+    "bulkFavorite": "В избранное",
+    "bulkAddToCollection": "В коллекцию",
+    "bulkAddTag": "Добавить тег",
+    "clearSelection": "Снять выделение",
+    "emptyTitle": "Ваша библиотека пуста",
+    "emptyBody": "Начните с создания нового элемента или импорта истории чата.",
+    "emptyFilteredTitle": "Ничего не найдено",
+    "emptyFilteredBody": "Попробуйте изменить фильтры или поисковый запрос.",
+    "deleteTitle": "Удалить {{count}} эл.",
+    "deleteBody": "Вы уверены? Это действие нельзя отменить.",
+    "deleted": "Удалено элементов: {{count}}",
+    "view": "Вид",
+    "viewList": "Список",
+    "viewGrid": "Сетка",
+    "selectItem": "Выбрать {{title}}",
+    "bulkFavorited": "Добавлено в избранное: {{count}}",
+    "bulkAdded": "Добавлено {{count}} эл. в {{name}}",
+    "bulkTagged": "Тег {{name}} добавлен к {{count}} эл."
+  },
+  "palette": {
+    "title": "Командная палитра",
+    "placeholder": "Введите команду или ищите...",
+    "newItem": "Новый элемент",
+    "newCollection": "Новая коллекция",
+    "groupActions": "Действия",
+    "groupNavigation": "Навигация",
+    "groupItems": "Элементы",
+    "toggleTheme": "Сменить тему",
+    "noResults": "Ничего не найдено",
+    "hintNavigate": "Навигация",
+    "hintSelect": "Выбрать"
+  },
+  "header": {
+    "language": "Язык",
+    "themeToLight": "Светлая тема",
+    "themeToDark": "Тёмная тема"
+  },
+  "languages": {
+    "en": "English",
+    "ru": "Русский",
+    "kk": "Қазақша"
+  },
+  "sources": {
+    "chatgpt": "ChatGPT",
+    "claude": "Claude",
+    "gemini": "Gemini",
+    "other": "Другое"
+  },
+  "editor": {
+    "removeTag": "Удалить тег {{name}}"
+  }
+}
