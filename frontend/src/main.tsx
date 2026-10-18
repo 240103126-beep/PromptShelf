@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router'
+import { createBrowserRouter, RouterProvider } from 'react-router'
 import { ApiProvider } from '@/providers/ApiProvider'
 import { PreferencesProvider } from '@/providers/PreferencesProvider'
 import { ToastProvider } from '@/providers/ToastProvider'
@@ -42,37 +42,44 @@ const NotFound = () => (
   </div>
 )
 
+const router = createBrowserRouter([
+  {
+    element: <RootLayout />,
+    children: [
+      {
+        element: <PublicLayout />,
+        children: [
+          { path: '/', element: <LandingPage />, handle: { titleKey: 'nav.home' } },
+          { path: '/about', element: <AboutPage />, handle: { titleKey: 'nav.about' } },
+          { path: '*', element: <NotFound /> },
+        ],
+      },
+      {
+        path: '/app',
+        element: <AppLayout />,
+        children: [
+          { index: true, element: <LibraryPage />, handle: { titleKey: 'nav.library' } },
+          { path: 'new', element: <PagePlaceholder title="New Item" />, handle: { titleKey: 'nav.newItem' } },
+          { path: 'items/:id', element: <PagePlaceholder title="Edit Item" /> },
+          { path: 'collections', element: <PagePlaceholder title="Collections" />, handle: { titleKey: 'nav.collections' } },
+          { path: 'collections/:id', element: <PagePlaceholder title="Collection View" /> },
+          { path: 'tags', element: <PagePlaceholder title="Tags" />, handle: { titleKey: 'nav.tags' } },
+          { path: 'import', element: <PagePlaceholder title="Import" />, handle: { titleKey: 'nav.import' } },
+          { path: 'assistant', element: <PagePlaceholder title="Assistant" />, handle: { titleKey: 'nav.assistant' } },
+          { path: 'export', element: <PagePlaceholder title="Export" />, handle: { titleKey: 'nav.export' } },
+          { path: 'settings', element: <PagePlaceholder title="Settings" />, handle: { titleKey: 'nav.settings' } },
+        ],
+      },
+    ],
+  },
+])
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ApiProvider>
       <PreferencesProvider>
         <ToastProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route element={<RootLayout />}>
-                {/* Public Routes */}
-                <Route element={<PublicLayout />}>
-                  <Route path="/" element={<LandingPage />} handle={{ titleKey: 'nav.home' }} />
-                  <Route path="/about" element={<AboutPage />} handle={{ titleKey: 'nav.about' }} />
-                  <Route path="*" element={<NotFound />} />
-                </Route>
-
-                {/* App Routes */}
-                <Route path="/app" element={<AppLayout />}>
-                  <Route index element={<LibraryPage />} handle={{ titleKey: 'nav.library' }} />
-                  <Route path="new" element={<PagePlaceholder title="New Item" />} handle={{ titleKey: 'nav.newItem' }} />
-                  <Route path="items/:id" element={<PagePlaceholder title="Edit Item" />} />
-                  <Route path="collections" element={<PagePlaceholder title="Collections" />} handle={{ titleKey: 'nav.collections' }} />
-                  <Route path="collections/:id" element={<PagePlaceholder title="Collection View" />} />
-                  <Route path="tags" element={<PagePlaceholder title="Tags" />} handle={{ titleKey: 'nav.tags' }} />
-                  <Route path="import" element={<PagePlaceholder title="Import" />} handle={{ titleKey: 'nav.import' }} />
-                  <Route path="assistant" element={<PagePlaceholder title="Assistant" />} handle={{ titleKey: 'nav.assistant' }} />
-                  <Route path="export" element={<PagePlaceholder title="Export" />} handle={{ titleKey: 'nav.export' }} />
-                  <Route path="settings" element={<PagePlaceholder title="Settings" />} handle={{ titleKey: 'nav.settings' }} />
-                </Route>
-              </Route>
-            </Routes>
-          </BrowserRouter>
+          <RouterProvider router={router} />
         </ToastProvider>
       </PreferencesProvider>
     </ApiProvider>
