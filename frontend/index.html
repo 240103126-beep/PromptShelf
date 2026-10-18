@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#FAFAF9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0B0B0C" media="(prefers-color-scheme: dark)" />
+    <meta name="description" content="PromptShelf — save, organize and export your AI prompts and chats." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>PromptShelf</title>
+    <script>
+      ;(function () {
+        try {
+          var theme = localStorage.getItem('ps-theme') || 'system'
+          var dark = theme === 'dark' || (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
+          if (dark) document.documentElement.classList.add('dark')
+          var lang = localStorage.getItem('ps-lang')
+          if (lang) document.documentElement.lang = lang
+        } catch (e) {}
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

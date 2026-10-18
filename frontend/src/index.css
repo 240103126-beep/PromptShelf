@@ -1,0 +1,193 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --bg: #fafaf9;
+  --surface: #ffffff;
+  --subtle: #f5f5f4;
+  --fg: #111111;
+  --muted: #57534e;
+  --faint: #6f6a66;
+  --border: #e7e5e4;
+  --border-strong: #d6d3d1;
+  --accent: #5b5bf0;
+  --accent-hover: #4b4be0;
+  --accent-fg: #ffffff;
+  --accent-soft: rgb(91 91 240 / 0.1);
+  --accent-text: #4545d6;
+  --danger: #c2261c;
+  --danger-soft: rgb(194 38 28 / 0.08);
+  --overlay: rgb(17 17 17 / 0.32);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px rgb(0 0 0 / 0.06);
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #0b0b0c;
+  --surface: #131315;
+  --subtle: #1a1a1d;
+  --fg: #ececec;
+  --muted: #a8a8b0;
+  --faint: #8d8d96;
+  --border: #232326;
+  --border-strong: #303035;
+  --accent: #5b5bf0;
+  --accent-hover: #6b6bf4;
+  --accent-fg: #ffffff;
+  --accent-soft: rgb(91 91 240 / 0.18);
+  --accent-text: #9a9af8;
+  --danger: #f2756b;
+  --danger-soft: rgb(242 117 107 / 0.12);
+  --overlay: rgb(0 0 0 / 0.6);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 32px rgb(0 0 0 / 0.5);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-subtle: var(--subtle);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-text: var(--accent-text);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-overlay: var(--overlay);
+
+  --font-sans: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --shadow-pop: var(--shadow);
+
+  --default-transition-duration: 150ms;
+  --animate-shimmer: shimmer 1.6s ease-in-out infinite;
+
+  @keyframes shimmer {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.45;
+    }
+  }
+}
+
+@layer base {
+  html {
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  body {
+    @apply bg-bg text-fg font-sans leading-relaxed;
+    min-height: 100dvh;
+  }
+  *,
+  ::before,
+  ::after {
+    border-color: var(--border);
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  ::selection {
+    background: var(--accent-soft);
+  }
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']) {
+    cursor: pointer;
+  }
+  dialog::backdrop {
+    background: var(--overlay);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .md-prose {
+    @apply text-[0.95rem] leading-relaxed text-fg;
+    overflow-wrap: anywhere;
+  }
+  .md-prose > * + * {
+    margin-top: 0.75em;
+  }
+  .md-prose h1,
+  .md-prose h2,
+  .md-prose h3,
+  .md-prose h4 {
+    @apply font-semibold tracking-tight;
+    margin-top: 1.25em;
+  }
+  .md-prose h1 {
+    font-size: 1.35em;
+  }
+  .md-prose h2 {
+    font-size: 1.15em;
+  }
+  .md-prose h3,
+  .md-prose h4 {
+    font-size: 1em;
+  }
+  .md-prose ul {
+    list-style: disc;
+    padding-left: 1.25em;
+  }
+  .md-prose ol {
+    list-style: decimal;
+    padding-left: 1.25em;
+  }
+  .md-prose li + li {
+    margin-top: 0.25em;
+  }
+  .md-prose a {
+    @apply text-accent-text underline underline-offset-2;
+  }
+  .md-prose code {
+    @apply font-mono text-[0.85em] bg-subtle border border-border rounded-[6px] px-1 py-px;
+  }
+  .md-prose pre {
+    @apply font-mono text-[0.85em] bg-subtle border border-border rounded-[12px] p-4 overflow-x-auto;
+  }
+  .md-prose pre code {
+    @apply bg-transparent border-0 p-0;
+  }
+  .md-prose table {
+    @apply w-full text-left text-[0.9em] border-collapse;
+  }
+  .md-prose th,
+  .md-prose td {
+    @apply border-b border-border py-2 pr-4 align-top;
+  }
+  .md-prose th {
+    @apply font-medium text-muted;
+  }
+  .md-prose blockquote {
+    @apply border-l-2 border-border-strong pl-4 text-muted;
+  }
+  .md-prose hr {
+    @apply border-border;
+  }
+}
