@@ -1,16 +1,19 @@
 # Brainstorming & Idea Generation: PromptShelf
 
-## 1. Выбор идеи (на основе TrustMRR / Carry)
-- **Идея:** PromptShelf — платформа для разработчиков и контент-мейкеров для сохранения, умной организации, тегирования и генерации ИИ-промптов.
-- **Почему эта идея:** Она решает реальную проблему управления контекстом чатов с LLM (ChatGPT, Claude), позволяет быстро находить нужные промпты и экспортировать их в Markdown.
+## 1. Choosing the idea (based on TrustMRR / Carry)
 
-## 2. Обсуждение ключевого функционала (MVP)
-- Многостраничный интерфейс (Главная, Библиотека промптов, ИИ-Генератор/Улучшитель промптов, Настройки).
-- Переключение языков (Казахский, Русский, Английский) в реальном времени.
-- Интеграция с ИИ для оптимизации текста промптов.
-- Персистентное хранилище на SQLite с использованием ORM.
+- **Idea:** PromptShelf is a platform for developers and content creators to save, smartly organize, tag and generate AI prompts.
+- **Why this idea:** It solves a real problem: managing the context of chats with LLMs (ChatGPT, Claude). It lets users quickly find the prompts they need and export them to Markdown.
 
-## 3. Архитектура и стек
-- **Frontend:** React / Vite + Tailwind CSS (минималистичный UI/UX, темная/светлая тема).
+## 2. Discussion of key functionality (MVP)
+
+- Multi-page interface (Home, Prompt Library, AI Generator/Improver, Settings).
+- Real-time language switching (Kazakh, Russian, English).
+- AI integration for optimizing prompt text.
+- Persistent storage on SQLite using an ORM.
+
+## 3. Architecture and stack
+
+- **Frontend:** React / Vite + Tailwind CSS (minimalist UI/UX, dark/light theme).
 - **Backend:** FastAPI (Python) + SQLite + SQLAlchemy (ORM).
-- **Деплой:** Готово для публикации на Render / Vercel.
+- **Deploy:** Ready to publish on Render / Vercel.
