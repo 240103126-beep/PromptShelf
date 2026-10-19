@@ -7,40 +7,20 @@ import { ToastProvider } from '@/providers/ToastProvider'
 import { RootLayout } from '@/components/layout/RootLayout'
 import { PublicLayout } from '@/components/layout/PublicLayout'
 import { AppLayout } from '@/components/layout/AppLayout'
+import LandingPage from '@/pages/LandingPage'
+import AboutPage from '@/pages/AboutPage'
+import NotFoundPage from '@/pages/NotFoundPage'
 import LibraryPage from '@/pages/LibraryPage'
+import EditorPage from '@/pages/EditorPage'
+import CollectionsPage from '@/pages/CollectionsPage'
+import CollectionPage from '@/pages/CollectionPage'
+import TagsPage from '@/pages/TagsPage'
+import ImportPage from '@/pages/ImportPage'
+import AssistantPage from '@/pages/AssistantPage'
+import ExportPage from '@/pages/ExportPage'
+import SettingsPage from '@/pages/SettingsPage'
 import '@/i18n'
 import '@/index.css'
-
-// Placeholder for landing page
-const LandingPage = () => (
-  <div className="container mx-auto px-4 py-20 text-center">
-    <h1 className="text-5xl font-bold tracking-tight sm:text-6xl">PromptShelf</h1>
-    <p className="mt-6 text-lg text-muted">Save, organize and export your AI prompts and chats.</p>
-  </div>
-)
-
-// Placeholder for About page
-const AboutPage = () => (
-  <div className="container mx-auto max-w-3xl px-4 py-20">
-    <h1 className="text-3xl font-bold">About PromptShelf</h1>
-    <p className="mt-4 text-muted">A minimalist tool for prompt engineers and AI enthusiasts.</p>
-  </div>
-)
-
-// Placeholder for other app pages
-const PagePlaceholder = ({ title }: { title: string }) => (
-  <div className="py-10 text-center">
-    <h1 className="text-2xl font-semibold">{title}</h1>
-    <p className="mt-2 text-muted">This page is coming soon.</p>
-  </div>
-)
-
-const NotFound = () => (
-  <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-    <h1 className="text-6xl font-bold text-accent">404</h1>
-    <p className="mt-4 text-xl">Page not found</p>
-  </div>
-)
 
 const router = createBrowserRouter([
   {
@@ -51,7 +31,7 @@ const router = createBrowserRouter([
         children: [
           { path: '/', element: <LandingPage />, handle: { titleKey: 'nav.home' } },
           { path: '/about', element: <AboutPage />, handle: { titleKey: 'nav.about' } },
-          { path: '*', element: <NotFound /> },
+          { path: '*', element: <NotFoundPage /> },
         ],
       },
       {
@@ -59,15 +39,15 @@ const router = createBrowserRouter([
         element: <AppLayout />,
         children: [
           { index: true, element: <LibraryPage />, handle: { titleKey: 'nav.library' } },
-          { path: 'new', element: <PagePlaceholder title="New Item" />, handle: { titleKey: 'nav.newItem' } },
-          { path: 'items/:id', element: <PagePlaceholder title="Edit Item" /> },
-          { path: 'collections', element: <PagePlaceholder title="Collections" />, handle: { titleKey: 'nav.collections' } },
-          { path: 'collections/:id', element: <PagePlaceholder title="Collection View" /> },
-          { path: 'tags', element: <PagePlaceholder title="Tags" />, handle: { titleKey: 'nav.tags' } },
-          { path: 'import', element: <PagePlaceholder title="Import" />, handle: { titleKey: 'nav.import' } },
-          { path: 'assistant', element: <PagePlaceholder title="Assistant" />, handle: { titleKey: 'nav.assistant' } },
-          { path: 'export', element: <PagePlaceholder title="Export" />, handle: { titleKey: 'nav.export' } },
-          { path: 'settings', element: <PagePlaceholder title="Settings" />, handle: { titleKey: 'nav.settings' } },
+          { path: 'new', element: <EditorPage />, handle: { titleKey: 'nav.newItem' } },
+          { path: 'items/:id', element: <EditorPage /> },
+          { path: 'collections', element: <CollectionsPage />, handle: { titleKey: 'nav.collections' } },
+          { path: 'collections/:id', element: <CollectionPage /> },
+          { path: 'tags', element: <TagsPage />, handle: { titleKey: 'nav.tags' } },
+          { path: 'import', element: <ImportPage />, handle: { titleKey: 'nav.import' } },
+          { path: 'assistant', element: <AssistantPage />, handle: { titleKey: 'nav.assistant' } },
+          { path: 'export', element: <ExportPage />, handle: { titleKey: 'nav.export' } },
+          { path: 'settings', element: <SettingsPage />, handle: { titleKey: 'nav.settings' } },
         ],
       },
     ],

@@ -80,15 +80,6 @@ export function createMockApi({ latency = 300, seed = true }: MockApiOptions = {
   const createOne = (input: ItemInput): Item => {
     const ts = now()
     const item: Item = {
-      title: '',
-      prompt: '',
-      response: '',
-      source: 'other',
-      categoryId: null,
-      tagIds: [],
-      collectionIds: [],
-      notes: '',
-      favorite: false,
       ...(sanitize(input) as ItemInput),
       id: uid('item'),
       createdAt: ts,

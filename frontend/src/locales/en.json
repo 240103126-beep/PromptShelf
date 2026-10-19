@@ -8,7 +8,13 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "save": "Save",
-    "edit": "Edit"
+    "edit": "Edit",
+    "create": "Create",
+    "back": "Back",
+    "copy": "Copy",
+    "copied": "Copied",
+    "name": "Name",
+    "description": "Description"
   },
   "nav": {
     "library": "Library",
@@ -112,6 +118,214 @@
     "other": "Other"
   },
   "editor": {
-    "removeTag": "Remove {{name}}"
+    "removeTag": "Remove {{name}}",
+    "newTitle": "New item",
+    "editTitle": "Edit item",
+    "backToLibrary": "Back to library",
+    "notFound": "Item not found",
+    "fieldTitle": "Title",
+    "titlePlaceholder": "Give it a short name",
+    "fieldPrompt": "Prompt",
+    "promptPlaceholder": "Paste the prompt you sent to the AI",
+    "fieldResponse": "Response",
+    "responsePlaceholder": "Paste the AI's answer (optional)",
+    "fieldSource": "Source",
+    "fieldCategory": "Category",
+    "noCategory": "No category",
+    "fieldTags": "Tags",
+    "newTagPlaceholder": "New tag…",
+    "addTag": "Add tag",
+    "fieldNotes": "Notes",
+    "notesPlaceholder": "Your own notes",
+    "favorite": "Favorite",
+    "preview": "Preview",
+    "edit": "Edit",
+    "previewEmpty": "Nothing to preview yet",
+    "save": "Save item",
+    "needContent": "Add a prompt or a response first.",
+    "deleteTitle": "Delete this item?",
+    "deleteBody": "This action cannot be undone.",
+    "ai": {
+      "title": "AI assist",
+      "hint": "Click a suggestion to apply it.",
+      "suggestTitle": "Suggest title",
+      "summarize": "Summarize",
+      "suggestTags": "Suggest tags",
+      "suggestCategory": "Suggest category",
+      "improve": "Improve prompt",
+      "needText": "Add a prompt first.",
+      "useThis": "Use this",
+      "appendNotes": "Add to notes",
+      "failed": "AI request failed. Try again."
+    }
+  },
+  "landing": {
+    "hero": {
+      "badge": "AI prompt library",
+      "title": "Keep every great prompt.",
+      "titleAccent": "Find it in seconds.",
+      "description": "Save, organize and export your AI prompts and chats from ChatGPT, Claude and Gemini.",
+      "ctaPrimary": "Open the app",
+      "ctaSecondary": "Learn more"
+    },
+    "features": {
+      "library": {
+        "title": "Organized library",
+        "description": "Tags, categories and collections keep everything in order."
+      },
+      "search": {
+        "title": "Instant search",
+        "description": "Find any prompt by title, text, notes or tag."
+      },
+      "import": {
+        "title": "Import chats",
+        "description": "Paste a raw conversation and AI splits it into clean items."
+      },
+      "export": {
+        "title": "Markdown export",
+        "description": "Export collections as .md files or a ZIP."
+      },
+      "ai": {
+        "title": "AI assist",
+        "description": "Auto titles, tags, summaries and prompt improvements."
+      },
+      "workflow": {
+        "title": "Fast workflow",
+        "description": "Command palette, keyboard shortcuts, light and dark themes."
+      }
+    },
+    "cta": {
+      "title": "Start building your prompt library",
+      "description": "Free to try. Your prompts, finally in one place.",
+      "button": "Open the app"
+    }
+  },
+  "about": {
+    "title": "About PromptShelf",
+    "lead": "PromptShelf is a quiet place for the prompts and chats you want to keep.",
+    "faqTitle": "FAQ",
+    "q1": "What is PromptShelf?",
+    "a1": "A library for AI prompts and answers with tags, categories, collections, search and Markdown export.",
+    "q2": "Which languages are supported?",
+    "a2": "Kazakh, Russian and English, including the AI features.",
+    "q3": "How does the AI help?",
+    "a3": "It suggests titles, tags and categories, summarizes entries, improves prompts and answers questions about your library.",
+    "q4": "Can I export my data?",
+    "a4": "Yes. Export any collection as one .md file or a ZIP with YAML frontmatter.",
+    "q5": "Where is my data stored?",
+    "a5": "In a SQLite database through an ORM on the backend.",
+    "cta": "Open the app"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "The page you are looking for does not exist.",
+    "home": "Back to home"
+  },
+  "collections": {
+    "title": "Collections",
+    "description": "Group prompts into sets you can export.",
+    "new": "New collection",
+    "nameRequired": "Name is required.",
+    "itemsCount": "{{count}} items",
+    "emptyTitle": "No collections yet",
+    "emptyBody": "Create a collection to group related prompts."
+  },
+  "collection": {
+    "back": "All collections",
+    "notFound": "Collection not found",
+    "exportMd": "Export .md",
+    "exportZip": "Export ZIP",
+    "exported": "Exported {{count}} items",
+    "addItems": "Add items",
+    "addTitle": "Add items to collection",
+    "addNone": "All items are already in this collection.",
+    "addConfirm": "Add {{count}}",
+    "emptyTitle": "This collection is empty",
+    "emptyBody": "Add items from your library.",
+    "remove": "Remove from collection",
+    "editTitle": "Edit collection",
+    "deleteTitle": "Delete collection?",
+    "deleteBody": "Items are kept; only the collection is deleted."
+  },
+  "tags": {
+    "title": "Tags & categories",
+    "description": "Keep your library tidy.",
+    "tabTags": "Tags",
+    "tabCategories": "Categories",
+    "newTag": "New tag name",
+    "newCategory": "New category name",
+    "color": "Color",
+    "add": "Add",
+    "itemsCount": "{{count}} items",
+    "rename": "Rename",
+    "mergeInto": "Merge into",
+    "merge": "Merge",
+    "mergeHint": "Select two or more to merge them.",
+    "emptyTagsTitle": "No tags yet",
+    "emptyCategoriesTitle": "No categories yet",
+    "emptyBody": "Create one above.",
+    "deleteTitle": "Delete {{name}}?",
+    "deleteBody": "It will be removed from all items.",
+    "colors": {
+      "gray": "Gray",
+      "red": "Red",
+      "amber": "Amber",
+      "green": "Green",
+      "teal": "Teal",
+      "blue": "Blue",
+      "indigo": "Indigo",
+      "violet": "Violet",
+      "pink": "Pink"
+    }
+  },
+  "import": {
+    "title": "Import a chat",
+    "description": "Paste a raw conversation and let AI split it into items.",
+    "placeholder": "Paste your chat here...",
+    "split": "Split with AI",
+    "needText": "Paste a conversation first.",
+    "reviewTitle": "Review items",
+    "noItems": "No items found. Try pasting more text.",
+    "save": "Save {{count}} items"
+  },
+  "assistant": {
+    "title": "Assistant",
+    "description": "Ask questions about your library or improve a prompt.",
+    "askTitle": "Ask my library",
+    "askPlaceholder": "e.g. Which prompt helps with SQL?",
+    "send": "Send",
+    "thinking": "Thinking…",
+    "emptyTitle": "Ask your library anything",
+    "emptyBody": "Answers cite the items they come from.",
+    "sources": "Sources",
+    "improveTitle": "Prompt improver",
+    "improvePlaceholder": "Paste a prompt to improve...",
+    "improve": "Improve",
+    "result": "Improved prompt"
+  },
+  "export": {
+    "title": "Export",
+    "description": "Download collections as Markdown.",
+    "selectCollections": "Collections",
+    "selectAll": "Select all",
+    "format": "Format",
+    "formatMd": "Single .md file",
+    "formatZip": "ZIP of .md files",
+    "export": "Export",
+    "needSelection": "Select at least one collection.",
+    "done": "Exported {{count}} items as {{name}}.",
+    "emptyTitle": "No collections to export",
+    "emptyBody": "Create a collection first.",
+    "goCollections": "Go to collections"
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Language and appearance.",
+    "language": "Language",
+    "languageHint": "The interface and AI answers use this language.",
+    "theme": "Theme",
+    "themeHint": "Switch between light and dark.",
+    "data": "About your data",
+    "dataBody": "Items are stored through the app's data layer. With the backend connected they live in a SQLite database."
   }
 }
