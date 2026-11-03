@@ -17,6 +17,11 @@ Parameters:
     Type: String
     Default: ghcr.io/240103126-beep/promptshelf
     AllowedPattern: 'ghcr.io/[a-z0-9-]+/[a-z0-9_.-]+'
+  EnablePullDeployment:
+    Type: String
+    Default: 'true'
+    AllowedValues: ['true', 'false']
+    Description: Poll public successful main CI builds every two minutes without GitHub tokens or an IAM identity provider. InitialRevision must include the installer.
   EnableGitHubDeployment:
     Type: String
     Default: 'false'
@@ -148,7 +153,7 @@ Resources:
         Fn::Base64: !Sub |
           #!/bin/bash
           set -euo pipefail
-          dnf install -y docker aws-cfn-bootstrap tar gzip openssl util-linux
+          dnf install -y docker aws-cfn-bootstrap tar gzip openssl util-linux python3
           trap '/opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AppInstance --region ${AWS::Region}' EXIT
           systemctl enable --now docker
           systemctl enable --now amazon-ssm-agent
@@ -190,6 +195,9 @@ Resources:
           SCRIPT
           chmod 700 /opt/promptshelf/deploy.sh
           /opt/promptshelf/deploy.sh '${InitialRevision}'
+          if [[ '${EnablePullDeployment}' == 'true' ]]; then
+            /opt/promptshelf/releases/'${InitialRevision}'/deploy/install-autodeploy.sh
+          fi
   DeployDocument:
     Type: AWS::SSM::Document
     Properties:
