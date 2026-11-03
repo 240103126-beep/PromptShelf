@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: promptshelf
+      POSTGRES_DB: promptshelf
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U promptshelf']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  app:
+    image: ${APP_IMAGE:-promptshelf:local}
+    build: .
+    ports:
+      - '${APP_PORT:-8000}:8000'
+    environment:
+      DATABASE_URL: postgresql+psycopg://promptshelf:${POSTGRES_PASSWORD}@db:5432/promptshelf
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=5)"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 15s
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  pgdata:

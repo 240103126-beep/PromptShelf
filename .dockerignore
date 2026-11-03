@@ -1,0 +1,13 @@
+.git
+**/node_modules
+**/.venv
+**/__pycache__
+**/.env
+**/*.db
+**/data
+**/dist
+
+**/.venv312
+playwright-report
+test-results
+e2e

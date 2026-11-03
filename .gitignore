@@ -5,3 +5,9 @@ __pycache__/
 data/
 node_modules/
 dist/
+
+.venv312/
+playwright-report/
+test-results/
+playwright-report/
+test-results/

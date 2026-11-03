@@ -9,7 +9,7 @@ export default defineConfig({
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
-  server: { host: true, port: 3000, allowedHosts: true },
+  server: { host: true, port: 3000, allowedHosts: true, proxy: { '/api': 'http://127.0.0.1:8091' } },
   preview: { host: true, port: 3000, allowedHosts: true },
   test: {
     environment: 'jsdom',
