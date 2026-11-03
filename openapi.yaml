@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: PromptShelf API
-  version: 1.0.0
+  version: 2.0.0
 paths:
   /api/health:
     get:
@@ -18,38 +18,38 @@ paths:
       summary: List Items
       operationId: list_items_api_items_get
       parameters:
-      - name: q
+      - name: search
         in: query
         required: false
         schema:
           anyOf:
           - type: string
           - type: 'null'
-          title: Q
-      - name: tag_id
+          title: Search
+      - name: tagId
         in: query
         required: false
         schema:
           anyOf:
-          - type: integer
+          - type: string
           - type: 'null'
-          title: Tag Id
-      - name: category_id
+          title: Tagid
+      - name: categoryId
         in: query
         required: false
         schema:
           anyOf:
-          - type: integer
+          - type: string
           - type: 'null'
-          title: Category Id
-      - name: collection_id
+          title: Categoryid
+      - name: collectionId
         in: query
         required: false
         schema:
           anyOf:
-          - type: integer
+          - type: string
           - type: 'null'
-          title: Collection Id
+          title: Collectionid
       - name: favorite
         in: query
         required: false
@@ -71,7 +71,7 @@ paths:
         required: false
         schema:
           type: string
-          default: updated_desc
+          default: updated
           title: Sort
       responses:
         '200':
@@ -111,6 +111,58 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/items/batch:
+    post:
+      summary: Create Items
+      operationId: create_items_api_items_batch_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchIn'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ItemOut'
+                type: array
+                title: Response Create Items Api Items Batch Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/items/bulk:
+    patch:
+      summary: Bulk Update
+      operationId: bulk_update_api_items_bulk_patch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ItemOut'
+                type: array
+                title: Response Bulk Update Api Items Bulk Patch
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/items/bulk-delete:
     post:
       summary: Bulk Delete
@@ -139,7 +191,7 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
+          type: string
           title: Item Id
       responses:
         '200':
@@ -154,22 +206,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    put:
+    patch:
       summary: Update Item
-      operationId: update_item_api_items__item_id__put
+      operationId: update_item_api_items__item_id__patch
       parameters:
       - name: item_id
         in: path
         required: true
         schema:
-          type: integer
+          type: string
           title: Item Id
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ItemIn'
+              $ref: '#/components/schemas/ItemPatch'
       responses:
         '200':
           description: Successful Response
@@ -191,35 +243,11 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
+          type: string
           title: Item Id
       responses:
         '204':
           description: Successful Response
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/items/{item_id}/favorite:
-    post:
-      summary: Toggle Favorite
-      operationId: toggle_favorite_api_items__item_id__favorite_post
-      parameters:
-      - name: item_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          title: Item Id
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ItemOut'
         '422':
           description: Validation Error
           content:
@@ -237,7 +265,7 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/TagOut'
+                  $ref: '#/components/schemas/NamedOut'
                 type: array
                 title: Response List Tags Api Tags Get
     post:
@@ -255,7 +283,30 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TagOut'
+                $ref: '#/components/schemas/NamedOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/tags/merge:
+    post:
+      summary: Merge Tags
+      operationId: merge_tags_api_tags_merge_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MergeIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NamedOut'
         '422':
           description: Validation Error
           content:
@@ -271,7 +322,7 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
+          type: string
           title: Tag Id
       requestBody:
         required: true
@@ -285,7 +336,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TagOut'
+                $ref: '#/components/schemas/NamedOut'
         '422':
           description: Validation Error
           content:
@@ -300,41 +351,11 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
+          type: string
           title: Tag Id
       responses:
         '204':
           description: Successful Response
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/tags/{tag_id}/merge:
-    post:
-      summary: Merge Tag
-      operationId: merge_tag_api_tags__tag_id__merge_post
-      parameters:
-      - name: tag_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          title: Tag Id
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/MergeIn'
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TagOut'
         '422':
           description: Validation Error
           content:
@@ -352,7 +373,7 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/CategoryOut'
+                  $ref: '#/components/schemas/NamedOut'
                 type: array
                 title: Response List Categories Api Categories Get
     post:
@@ -370,7 +391,30 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CategoryOut'
+                $ref: '#/components/schemas/NamedOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/categories/merge:
+    post:
+      summary: Merge Categories
+      operationId: merge_categories_api_categories_merge_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MergeIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NamedOut'
         '422':
           description: Validation Error
           content:
@@ -386,7 +430,7 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
+          type: string
           title: Cat Id
       requestBody:
         required: true
@@ -400,7 +444,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CategoryOut'
+                $ref: '#/components/schemas/NamedOut'
         '422':
           description: Validation Error
           content:
@@ -415,7 +459,7 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
+          type: string
           title: Cat Id
       responses:
         '204':
@@ -471,7 +515,7 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
+          type: string
           title: Col Id
       responses:
         '200':
@@ -486,22 +530,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-    put:
+    patch:
       summary: Update Collection
-      operationId: update_collection_api_collections__col_id__put
+      operationId: update_collection_api_collections__col_id__patch
       parameters:
       - name: col_id
         in: path
         required: true
         schema:
-          type: integer
+          type: string
           title: Col Id
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CollectionIn'
+              $ref: '#/components/schemas/CollectionPatch'
       responses:
         '200':
           description: Successful Response
@@ -523,71 +567,11 @@ paths:
         in: path
         required: true
         schema:
-          type: integer
+          type: string
           title: Col Id
       responses:
         '204':
           description: Successful Response
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/collections/{col_id}/items:
-    post:
-      summary: Add Items
-      operationId: add_items_api_collections__col_id__items_post
-      parameters:
-      - name: col_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          title: Col Id
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ItemIdsIn'
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CollectionOut'
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/collections/{col_id}/items/{item_id}:
-    delete:
-      summary: Remove Item
-      operationId: remove_item_api_collections__col_id__items__item_id__delete
-      parameters:
-      - name: col_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          title: Col Id
-      - name: item_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          title: Item Id
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CollectionOut'
         '422':
           description: Validation Error
           content:
@@ -616,10 +600,136 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/import/parse:
+  /api/ai/suggest-titles:
     post:
-      summary: Import Parse
-      operationId: import_parse_api_import_parse_post
+      summary: Suggest Titles
+      operationId: suggest_titles_api_ai_suggest_titles_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzeIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+                title: Response Suggest Titles Api Ai Suggest Titles Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/ai/summarize:
+    post:
+      summary: Summarize
+      operationId: summarize_api_ai_summarize_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzeIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: string
+                title: Response Summarize Api Ai Summarize Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/ai/suggest-tags:
+    post:
+      summary: Suggest Tags
+      operationId: suggest_tags_api_ai_suggest_tags_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzeIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+                title: Response Suggest Tags Api Ai Suggest Tags Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/ai/suggest-categories:
+    post:
+      summary: Suggest Categories
+      operationId: suggest_categories_api_ai_suggest_categories_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzeIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+                title: Response Suggest Categories Api Ai Suggest Categories Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/ai/improve-prompt:
+    post:
+      summary: Improve Prompt
+      operationId: improve_prompt_api_ai_improve_prompt_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImproveIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: string
+                title: Response Improve Prompt Api Ai Improve Prompt Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/ai/split-chat:
+    post:
+      summary: Split Chat
+      operationId: split_chat_api_ai_split_chat_post
       requestBody:
         content:
           application/json:
@@ -638,54 +748,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
-  /api/ai/analyze:
-    post:
-      summary: Ai Analyze
-      operationId: ai_analyze_api_ai_analyze_post
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AnalyzeIn'
-        required: true
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
-  /api/ai/improve-prompt:
-    post:
-      summary: Ai Improve
-      operationId: ai_improve_api_ai_improve_prompt_post
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ImproveIn'
-        required: true
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-        '422':
-          description: Validation Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HTTPValidationError'
   /api/ai/ask:
     post:
-      summary: Ai Ask
-      operationId: ai_ask_api_ai_ask_post
+      summary: Ask Library
+      operationId: ask_library_api_ai_ask_post
       requestBody:
         content:
           application/json:
@@ -710,19 +776,21 @@ components:
       properties:
         prompt:
           type: string
-          minLength: 1
           title: Prompt
+          default: ''
         response:
           type: string
           title: Response
           default: ''
-        lang:
+        locale:
           type: string
-          title: Lang
+          enum:
+          - en
+          - ru
+          - kk
+          title: Locale
           default: en
       type: object
-      required:
-      - prompt
       title: AnalyzeIn
     AskIn:
       properties:
@@ -730,31 +798,73 @@ components:
           type: string
           minLength: 1
           title: Question
-        lang:
+        history:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: History
+        locale:
           type: string
-          title: Lang
+          enum:
+          - en
+          - ru
+          - kk
+          title: Locale
           default: en
       type: object
       required:
       - question
       title: AskIn
-    CategoryOut:
+    BatchIn:
       properties:
-        id:
-          type: integer
-          title: Id
-        name:
-          type: string
-          title: Name
-        color:
-          type: string
-          title: Color
+        items:
+          items:
+            $ref: '#/components/schemas/ItemIn'
+          type: array
+          title: Items
       type: object
       required:
-      - id
-      - name
-      - color
-      title: CategoryOut
+      - items
+      title: BatchIn
+    BulkIn:
+      properties:
+        ids:
+          items:
+            type: string
+          type: array
+          title: Ids
+        patch:
+          $ref: '#/components/schemas/BulkPatch'
+      type: object
+      required:
+      - ids
+      - patch
+      title: BulkIn
+    BulkPatch:
+      properties:
+        favorite:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Favorite
+        addTagIds:
+          items:
+            type: string
+          type: array
+          title: Addtagids
+        addCollectionIds:
+          items:
+            type: string
+          type: array
+          title: Addcollectionids
+        removeCollectionIds:
+          items:
+            type: string
+          type: array
+          title: Removecollectionids
+      type: object
+      title: BulkPatch
     CollectionIn:
       properties:
         name:
@@ -772,48 +882,65 @@ components:
       title: CollectionIn
     CollectionOut:
       properties:
-        id:
-          type: integer
-          title: Id
         name:
           type: string
+          maxLength: 120
+          minLength: 1
           title: Name
         description:
           type: string
           title: Description
-        item_ids:
-          items:
-            type: integer
-          type: array
-          title: Item Ids
-        item_count:
+          default: ''
+        id:
+          type: string
+          title: Id
+        createdAt:
+          type: string
+          format: date-time
+          title: Createdat
+        itemCount:
           type: integer
-          title: Item Count
+          title: Itemcount
       type: object
       required:
-      - id
       - name
-      - description
-      - item_ids
-      - item_count
+      - id
+      - createdAt
+      - itemCount
       title: CollectionOut
+    CollectionPatch:
+      properties:
+        name:
+          anyOf:
+          - type: string
+            maxLength: 120
+            minLength: 1
+          - type: 'null'
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+      type: object
+      title: CollectionPatch
     ExportIn:
       properties:
-        collection_ids:
+        collectionIds:
           items:
-            type: integer
+            type: string
           type: array
-          title: Collection Ids
-        mode:
+          title: Collectionids
+        format:
           type: string
           enum:
-          - single
+          - md
           - zip
-          title: Mode
-          default: single
+          title: Format
+          default: md
       type: object
       required:
-      - collection_ids
+      - collectionIds
       title: ExportIn
     HTTPValidationError:
       properties:
@@ -830,9 +957,13 @@ components:
           type: string
           minLength: 1
           title: Prompt
-        lang:
+        locale:
           type: string
-          title: Lang
+          enum:
+          - en
+          - ru
+          - kk
+          title: Locale
           default: en
       type: object
       required:
@@ -840,14 +971,14 @@ components:
       title: ImproveIn
     ItemIdsIn:
       properties:
-        item_ids:
+        ids:
           items:
-            type: integer
+            type: string
           type: array
-          title: Item Ids
+          title: Ids
       type: object
       required:
-      - item_ids
+      - ids
       title: ItemIdsIn
     ItemIn:
       properties:
@@ -866,98 +997,179 @@ components:
           default: ''
         source:
           type: string
+          enum:
+          - chatgpt
+          - claude
+          - gemini
+          - other
           title: Source
-          default: Other
+          default: other
         notes:
           type: string
           title: Notes
           default: ''
-        is_favorite:
+        favorite:
           type: boolean
-          title: Is Favorite
+          title: Favorite
           default: false
-        category_id:
+        categoryId:
           anyOf:
-          - type: integer
+          - type: string
           - type: 'null'
-          title: Category Id
-        tag_ids:
+          title: Categoryid
+        tagIds:
           items:
-            type: integer
+            type: string
           type: array
-          title: Tag Ids
-          default: []
+          title: Tagids
+        collectionIds:
+          items:
+            type: string
+          type: array
+          title: Collectionids
       type: object
       required:
       - title
       title: ItemIn
     ItemOut:
       properties:
-        id:
-          type: integer
-          title: Id
         title:
           type: string
+          maxLength: 200
+          minLength: 1
           title: Title
         prompt:
           type: string
           title: Prompt
+          default: ''
         response:
           type: string
           title: Response
+          default: ''
         source:
           type: string
+          enum:
+          - chatgpt
+          - claude
+          - gemini
+          - other
           title: Source
+          default: other
         notes:
           type: string
           title: Notes
-        is_favorite:
+          default: ''
+        favorite:
           type: boolean
-          title: Is Favorite
-        category:
+          title: Favorite
+          default: false
+        categoryId:
           anyOf:
-          - $ref: '#/components/schemas/CategoryOut'
+          - type: string
           - type: 'null'
-        tags:
+          title: Categoryid
+        tagIds:
           items:
-            $ref: '#/components/schemas/TagOut'
+            type: string
           type: array
-          title: Tags
-          default: []
-        collection_ids:
+          title: Tagids
+        collectionIds:
           items:
-            type: integer
+            type: string
           type: array
-          title: Collection Ids
-          default: []
-        created_at:
+          title: Collectionids
+        id:
+          type: string
+          title: Id
+        createdAt:
           type: string
           format: date-time
-          title: Created At
-        updated_at:
+          title: Createdat
+        updatedAt:
           type: string
           format: date-time
-          title: Updated At
+          title: Updatedat
       type: object
       required:
-      - id
       - title
-      - prompt
-      - response
-      - source
-      - notes
-      - is_favorite
-      - created_at
-      - updated_at
+      - id
+      - createdAt
+      - updatedAt
       title: ItemOut
+    ItemPatch:
+      properties:
+        title:
+          anyOf:
+          - type: string
+            maxLength: 200
+            minLength: 1
+          - type: 'null'
+          title: Title
+        prompt:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Prompt
+        response:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Response
+        source:
+          anyOf:
+          - type: string
+            enum:
+            - chatgpt
+            - claude
+            - gemini
+            - other
+          - type: 'null'
+          title: Source
+        notes:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Notes
+        favorite:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Favorite
+        categoryId:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Categoryid
+        tagIds:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Tagids
+        collectionIds:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Collectionids
+      type: object
+      title: ItemPatch
     MergeIn:
       properties:
-        into_id:
-          type: integer
-          title: Into Id
+        sourceIds:
+          items:
+            type: string
+          type: array
+          title: Sourceids
+        targetId:
+          type: string
+          title: Targetid
       type: object
       required:
-      - into_id
+      - sourceIds
+      - targetId
       title: MergeIn
     NamedIn:
       properties:
@@ -967,14 +1179,54 @@ components:
           minLength: 1
           title: Name
         color:
-          anyOf:
-          - type: string
-          - type: 'null'
+          type: string
+          enum:
+          - gray
+          - red
+          - amber
+          - green
+          - teal
+          - blue
+          - indigo
+          - violet
+          - pink
           title: Color
+          default: indigo
       type: object
       required:
       - name
       title: NamedIn
+    NamedOut:
+      properties:
+        id:
+          type: string
+          title: Id
+        name:
+          type: string
+          title: Name
+        color:
+          type: string
+          enum:
+          - gray
+          - red
+          - amber
+          - green
+          - teal
+          - blue
+          - indigo
+          - violet
+          - pink
+          title: Color
+        itemCount:
+          type: integer
+          title: Itemcount
+      type: object
+      required:
+      - id
+      - name
+      - color
+      - itemCount
+      title: NamedOut
     NamedPatch:
       properties:
         name:
@@ -987,6 +1239,16 @@ components:
         color:
           anyOf:
           - type: string
+            enum:
+            - gray
+            - red
+            - amber
+            - green
+            - teal
+            - blue
+            - indigo
+            - violet
+            - pink
           - type: 'null'
           title: Color
       type: object
@@ -997,31 +1259,18 @@ components:
           type: string
           minLength: 1
           title: Raw
-        lang:
+        locale:
           type: string
-          title: Lang
+          enum:
+          - en
+          - ru
+          - kk
+          title: Locale
           default: en
       type: object
       required:
       - raw
       title: ParseIn
-    TagOut:
-      properties:
-        id:
-          type: integer
-          title: Id
-        name:
-          type: string
-          title: Name
-        color:
-          type: string
-          title: Color
-      type: object
-      required:
-      - id
-      - name
-      - color
-      title: TagOut
     ValidationError:
       properties:
         loc:

@@ -1,10 +1,7 @@
 import { ApiError, type ApiClient } from './api'
 import type { ExportResult } from '@/types'
 
-/**
- * HTTP implementation for the real backend. Endpoints follow a conventional REST
- * shape; adjust paths once the backend contract is final.
- */
+/** HTTP transport for the backend OpenAPI contract. */
 export function createHttpApi(baseUrl: string): ApiClient {
   const base = baseUrl.replace(/\/$/, '')
 
