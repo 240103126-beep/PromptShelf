@@ -1,0 +1,253 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: PromptShelf coursework - one EC2 instance running the app and PostgreSQL with Docker Compose. Review Free Plan eligibility before creating.
+Parameters:
+  InitialRevision:
+    Type: String
+    AllowedPattern: '[0-9a-f]{40}'
+    Description: Full Git SHA whose public GHCR image has already passed CI.
+  GitHubOwner:
+    Type: String
+    Default: 240103126-beep
+    AllowedPattern: '[A-Za-z0-9-]+'
+  GitHubRepository:
+    Type: String
+    Default: PromptShelf
+    AllowedPattern: '[A-Za-z0-9_.-]+'
+  ImageRepository:
+    Type: String
+    Default: ghcr.io/240103126-beep/promptshelf
+    AllowedPattern: 'ghcr.io/[a-z0-9-]+/[a-z0-9_.-]+'
+  ExistingGitHubOidcProviderArn:
+    Type: String
+    Default: ''
+    Description: If the account already has the GitHub OIDC provider, supply its ARN to avoid creating a duplicate.
+  VisitorCidr:
+    Type: String
+    Default: 0.0.0.0/0
+    Description: IPv4 range allowed to open the coursework website. No SSH or database port is exposed.
+    AllowedPattern: '(\d{1,3}\.){3}\d{1,3}/\d{1,2}'
+  DomainName:
+    Type: String
+    Default: ''
+    AllowedPattern: '^$|(?=.{1,253}$)([A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}'
+    Description: Optional domain whose DNS A record you will point to the instance. Empty uses an HTTP-only demo.
+  AmazonLinuxImage:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
+Conditions:
+  CreateGitHubOidc: !Equals [!Ref ExistingGitHubOidcProviderArn, '']
+  HasDomain: !Not [!Equals [!Ref DomainName, '']]
+Resources:
+  Network:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.42.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags: [{Key: Name, Value: !Sub '${AWS::StackName}-vpc'}]
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+  GatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref Network
+      InternetGatewayId: !Ref InternetGateway
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Network
+      CidrBlock: 10.42.1.0/24
+      MapPublicIpOnLaunch: true
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Network
+  InternetRoute:
+    Type: AWS::EC2::Route
+    DependsOn: GatewayAttachment
+    Properties:
+      RouteTableId: !Ref RouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+  SubnetRoute:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTable
+      SubnetId: !Ref PublicSubnet
+  WebSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: HTTP coursework demo only; administration uses SSM, database is private inside Compose.
+      VpcId: !Ref Network
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Ref VisitorCidr
+  HttpsIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Condition: HasDomain
+    Properties:
+      GroupId: !Ref WebSecurityGroup
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      CidrIp: !Ref VisitorCidr
+  InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: {Service: ec2.amazonaws.com}
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles: [!Ref InstanceRole]
+  AppInstance:
+    Type: AWS::EC2::Instance
+    DependsOn: [InternetRoute, SubnetRoute]
+    CreationPolicy:
+      ResourceSignal:
+        Count: 1
+        Timeout: PT20M
+    Properties:
+      ImageId: !Ref AmazonLinuxImage
+      InstanceType: t3.micro
+      IamInstanceProfile: !Ref InstanceProfile
+      SubnetId: !Ref PublicSubnet
+      SecurityGroupIds: [!Ref WebSecurityGroup]
+      MetadataOptions:
+        HttpTokens: required
+        HttpEndpoint: enabled
+      CreditSpecification:
+        CPUCredits: standard
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 8
+            VolumeType: gp3
+            Encrypted: true
+            DeleteOnTermination: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${AWS::StackName}-app'
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -euo pipefail
+          dnf install -y docker aws-cfn-bootstrap tar gzip openssl util-linux
+          trap '/opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AppInstance --region ${AWS::Region}' EXIT
+          systemctl enable --now docker
+          systemctl enable --now amazon-ssm-agent
+          mkdir -p /usr/local/lib/docker/cli-plugins /opt/promptshelf/releases
+          curl -fsSL https://github.com/docker/compose/releases/download/v2.39.4/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
+          chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+          umask 077
+          printf 'POSTGRES_PASSWORD=%s\nAPP_PORT=80\n' "$(openssl rand -hex 32)" > /opt/promptshelf/.env
+          if [[ -n '${DomainName}' ]]; then
+            sed -i 's/APP_PORT=80/APP_PORT=127.0.0.1:8000/' /opt/promptshelf/.env
+            printf 'DOMAIN_NAME=%s\n' '${DomainName}' >> /opt/promptshelf/.env
+          fi
+          cat > /opt/promptshelf/deploy.sh <<'SCRIPT'
+          #!/bin/bash
+          set -euo pipefail
+          revision="$1"
+          [[ "$revision" =~ ^[0-9a-f]{40}$ ]] || exit 2
+          exec 9>/opt/promptshelf/deploy.lock
+          flock -w 600 9
+          release="/opt/promptshelf/releases/$revision"
+          mkdir -p "$release"
+          archive=$(mktemp)
+          trap 'rm -f "$archive"' EXIT
+          curl --fail --silent --show-error --location --retry 3 "https://codeload.github.com/${GitHubOwner}/${GitHubRepository}/tar.gz/$revision" -o "$archive"
+          tar -xzf "$archive" --strip-components=1 -C "$release"
+          export APP_IMAGE="${ImageRepository}:$revision"
+          cd "$release"
+          compose=(docker compose --env-file /opt/promptshelf/.env --project-name promptshelf -f docker-compose.yaml -f deploy/compose.aws.yaml)
+          health_url=http://127.0.0.1/api/health
+          if [[ -n '${DomainName}' ]]; then
+            compose+=(-f deploy/compose.https.yaml)
+            health_url=http://127.0.0.1:8000/api/health
+          fi
+          "${!compose[@]}" config --quiet
+          "${!compose[@]}" pull
+          "${!compose[@]}" up --detach --no-build --wait --wait-timeout 300
+          curl --fail --silent --show-error --retry 12 --retry-delay 5 "$health_url"
+          printf '%s\n' "$revision" > /opt/promptshelf/current-revision
+          SCRIPT
+          chmod 700 /opt/promptshelf/deploy.sh
+          /opt/promptshelf/deploy.sh '${InitialRevision}'
+  DeployDocument:
+    Type: AWS::SSM::Document
+    Properties:
+      DocumentType: Command
+      Content:
+        schemaVersion: '2.2'
+        description: Deploy only a validated full Git revision to the existing PromptShelf Compose stack.
+        parameters:
+          Revision:
+            type: String
+            allowedPattern: '^[0-9a-f]{40}$'
+            interpolationType: ENV_VAR
+        mainSteps:
+          - action: aws:runShellScript
+            name: deploy
+            inputs:
+              timeoutSeconds: '600'
+              runCommand:
+                - '/opt/promptshelf/deploy.sh "$SSM_Revision"'
+  GitHubOidc:
+    Type: AWS::IAM::OIDCProvider
+    Condition: CreateGitHubOidc
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList: [sts.amazonaws.com]
+  GitHubDeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: Main branch can only invoke this stack deployment document on this stack EC2 instance.
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !If [CreateGitHubOidc, !Ref GitHubOidc, !Ref ExistingGitHubOidcProviderArn]
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+                token.actions.githubusercontent.com:sub: !Sub 'repo:${GitHubOwner}/${GitHubRepository}:ref:refs/heads/main'
+      Policies:
+        - PolicyName: DeployExistingStackOnly
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: cloudformation:DescribeStacks
+                Resource: !Ref AWS::StackId
+              - Effect: Allow
+                Action: ssm:SendCommand
+                Resource:
+                  - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:document/${DeployDocument}'
+                  - !Sub 'arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:instance/${AppInstance}'
+              - Effect: Allow
+                Action: ssm:GetCommandInvocation
+                Resource: '*'
+Outputs:
+  AppUrl:
+    Description: Public application URL. Point the optional domain DNS A record to InstancePublicIp.
+    Value: !If [HasDomain, !Sub 'https://${DomainName}', !Sub 'http://${AppInstance.PublicIp}']
+  InstancePublicIp:
+    Value: !GetAtt AppInstance.PublicIp
+  InstanceId:
+    Value: !Ref AppInstance
+  DeployDocument:
+    Value: !Ref DeployDocument
+  GitHubDeployRoleArn:
+    Value: !GetAtt GitHubDeployRole.Arn
