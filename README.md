@@ -53,10 +53,13 @@ The Vite development proxy forwards `/api` to port 8091 on the backend. For a fr
 
 ## Verification
 
+Recorded results: [verification report](docs/verification.md).
+
 ```sh
 # Backend API tests (temporary SQLite database)
 cd backend
 ../.venv/bin/python -m pytest -q
+cd ..
 
 # Frontend tests and production typecheck/build (from repository root)
 npm --prefix frontend test

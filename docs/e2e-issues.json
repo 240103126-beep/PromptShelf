@@ -1,0 +1,114 @@
+[
+  {
+    "test": "public pages and direct SPA navigation",
+    "issue": 24
+  },
+  {
+    "test": "create an item and persist all editor fields",
+    "issue": 25
+  },
+  {
+    "test": "editor validates content and previews before saving",
+    "issue": 36
+  },
+  {
+    "test": "edit and delete an existing item",
+    "issue": 37
+  },
+  {
+    "test": "search finds title prompt response and notes",
+    "issue": 26
+  },
+  {
+    "test": "category tag collection and source filters combine",
+    "issue": 38
+  },
+  {
+    "test": "favorite toggle persists and filters the library",
+    "issue": 39
+  },
+  {
+    "test": "sort and grid view change results and persist appearance",
+    "issue": 40
+  },
+  {
+    "test": "bulk favorite tag collection and delete operate on selection",
+    "issue": 27
+  },
+  {
+    "test": "tags: create rename recolor and delete",
+    "issue": 28
+  },
+  {
+    "test": "tags: merge preserves item relationships",
+    "issue": 41
+  },
+  {
+    "test": "categories: create rename recolor and delete",
+    "issue": 29
+  },
+  {
+    "test": "categories: merge preserves item relationships",
+    "issue": 42
+  },
+  {
+    "test": "collections create edit and delete while preserving items",
+    "issue": 30
+  },
+  {
+    "test": "collection membership adds and removes library items",
+    "issue": 43
+  },
+  {
+    "test": "export md downloads actual collection content",
+    "issue": 31
+  },
+  {
+    "test": "export zip downloads actual collection content",
+    "issue": 44
+  },
+  {
+    "test": "raw chat import reviews and saves parsed items",
+    "issue": 32
+  },
+  {
+    "test": "AI editor title suggestions can be applied",
+    "issue": 33
+  },
+  {
+    "test": "AI editor summary suggestions can be applied",
+    "issue": 45
+  },
+  {
+    "test": "AI editor tags suggestions can be applied",
+    "issue": 46
+  },
+  {
+    "test": "AI editor category suggestions can be applied",
+    "issue": 47
+  },
+  {
+    "test": "AI editor improve suggestions can be applied",
+    "issue": 48
+  },
+  {
+    "test": "ask library answers with working source citations",
+    "issue": 34
+  },
+  {
+    "test": "assistant improves and copies a prompt",
+    "issue": 49
+  },
+  {
+    "test": "languages switch between Kazakh Russian English and persist",
+    "issue": 35
+  },
+  {
+    "test": "theme toggle persists across reload",
+    "issue": 50
+  },
+  {
+    "test": "keyboard shortcuts and command palette navigate items",
+    "issue": 51
+  }
+]
