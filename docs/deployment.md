@@ -6,7 +6,7 @@
 - `docker-compose.yaml` runs the app and PostgreSQL, with the database ready before the app starts.
 - `deploy/compose.aws.yaml` adds restart policies, bounded logs and an application health check to that same Compose stack.
 - `deploy/cloudformation.yaml` creates one `t3.micro` EC2 instance, an 8 GiB encrypted root disk, a public subnet and HTTP access. PostgreSQL is reachable only inside Compose. Administration uses Systems Manager, with no SSH port.
-- GitHub OIDC permits only this repository's `main` branch to invoke a specific deployment document on the one instance. It cannot create infrastructure or grant IAM permissions. No permanent AWS keys are stored in GitHub.
+- Optional GitHub OIDC permits only this repository's `main` branch to invoke a specific deployment document on the one instance. It is disabled by default (`EnableGitHubDeployment=false`) so the app can deploy on accounts that restrict identity providers. When enabled, the role cannot create infrastructure or grant IAM permissions. No permanent AWS keys are stored in GitHub.
 - `deploy/aws-deploy.sh` updates an existing stack to a tested commit and verifies its public health endpoint.
 - `render.yaml` is an optional free-plan Docker preview with a managed PostgreSQL database.
 
@@ -30,6 +30,10 @@ Do not run the creation command below until the owner has checked the account pl
 
 AWS eligibility depends on account age and region. For newer accounts, the free plan is credit-based and ends after six months or credit exhaustion, whichever comes first. EC2, EBS, network transfer and public IPv4 usage consume allowances/credits; the template cannot guarantee a zero bill on a paid account. Verify Free Tier availability and remaining credits in the Billing console before deployment. If a required service is unavailable in the Free Plan, stop. [AWS EC2 Free Tier documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-free-tier-usage.html).
 
+AWS's new sign-up experience assigns each project to one Region. For a Kazakhstan contact address this is normally Sydney (`ap-southeast-2`); verify the project's actual Region in **AWS Settings → Project → Overview → Additional Info** before launch. The example below uses Sydney, not a cross-Region deployment. Do not activate advanced features or switch to a paid plan to change the Region. [AWS project Regions](https://docs.aws.amazon.com/accounts/latest/reference/project-regions.html).
+
+New-experience Free and Paid projects also apply a policy denying `iam:*Provider*`, which can prevent creating the GitHub OIDC provider. Keep `EnableGitHubDeployment=false` for the initial deployment unless the account's supported permissions have been confirmed. EC2's SSM role and deployment document remain part of the stack; application startup does not depend on the GitHub identity resources. GitHub-to-AWS automatic deployment remains disabled. Do not upgrade or remove account protections to enable it. [AWS project policies](https://docs.aws.amazon.com/accounts/latest/reference/scps-and-rcps-for-projects.html).
+
 An optional `DomainName` parameter enables the Caddy HTTPS overlay without adding AWS services; the domain itself must already belong to the owner. The template deliberately has no NAT Gateway, load balancer, RDS, Elastic IP or automatic scaling. It fixes the instance type to `t3.micro` with standard CPU credits to avoid surplus CPU-credit charging. A small prebuilt image is pulled from GHCR, so no Node build runs on the micro instance.
 
 ## 3. Publish the tested image
@@ -44,10 +48,10 @@ cfn-lint deploy/cloudformation.yaml
 
 ## 4. Create the stack after account-owner approval
 
-Use an authenticated AWS CLI profile for the initial creation only. The deployment role created by this stack is deliberately unable to create or update infrastructure.
+Use an authenticated AWS CLI profile for the initial creation only. When optional GitHub deployment is enabled, its deployment role is deliberately unable to create or update infrastructure.
 
 ```sh
-export AWS_REGION=eu-central-1
+export AWS_REGION=ap-southeast-2
 export AWS_STACK_NAME=promptshelf-course
 revision=$(git rev-parse HEAD)
 aws cloudformation deploy \
@@ -55,19 +59,21 @@ aws cloudformation deploy \
   --stack-name "$AWS_STACK_NAME" \
   --template-file deploy/cloudformation.yaml \
   --capabilities CAPABILITY_IAM \
-  --parameter-overrides InitialRevision="$revision"
+  --parameter-overrides InitialRevision="$revision" EnableGitHubDeployment=false
 aws cloudformation describe-stacks \
   --region "$AWS_REGION" --stack-name "$AWS_STACK_NAME" \
   --query 'Stacks[0].Outputs'
 ```
 
-If the account already contains `token.actions.githubusercontent.com` in IAM → Identity providers, pass `ExistingGitHubOidcProviderArn=arn:aws:iam::<account-id>:oidc-provider/token.actions.githubusercontent.com` as another parameter. An account cannot create that provider twice.
+Only after confirming supported permissions and obtaining the owner's approval, enable GitHub deployment by setting `EnableGitHubDeployment=true` in a stack update. If the account already contains `token.actions.githubusercontent.com` in IAM → Identity providers, also pass `ExistingGitHubOidcProviderArn=arn:aws:iam::<account-id>:oidc-provider/token.actions.githubusercontent.com`; an account cannot create that provider twice. That ARN is ignored while GitHub deployment is disabled. If provider access is denied, retain the default disabled setting and record automatic AWS deployment as unfinished; do not activate advanced features or upgrade the plan.
 
 The stack waits for the instance to install Docker, pull the tested image, start app + PostgreSQL with Compose and pass `/api/health`. A failed bootstrap fails creation instead of presenting a working deployment. The database password is generated on the instance and stored in a root-readable file, not in the template, Git, workflow logs or parameters.
 
 `AppUrl` is a temporary public IPv4 HTTP URL. The instance address can change after stopping/starting it. To enable HTTPS with an existing domain, pass `DomainName=your-domain.example` during creation and point its DNS A record to the `InstancePublicIp` output as soon as the instance starts. Caddy obtains a certificate and redirects HTTP to HTTPS; public health verification will wait for DNS/certificate readiness. The domain mode requires public HTTP/HTTPS access for certificate issuance. Use only synthetic coursework data. A real shared service additionally needs authentication, external backups and a managed database.
 
 ## 5. Enable deployment after passing checks
+
+This section applies only after `EnableGitHubDeployment=true` was approved and successfully deployed. The `GitHubDeployRoleArn` output is absent while the option is false. Do not enable `AWS_DEPLOY_ENABLED` in GitHub for a stack without that role.
 
 In GitHub **Settings → Secrets and variables → Actions → Variables**, configure:
 
@@ -115,7 +121,7 @@ aws cloudformation delete-stack --region "$AWS_REGION" --stack-name "$AWS_STACK_
 aws cloudformation wait stack-delete-complete --region "$AWS_REGION" --stack-name "$AWS_STACK_NAME"
 ```
 
-Inspect the console to confirm EC2, EBS and network resources are gone, then remove the GitHub deployment variables. A GitHub OIDC provider supplied through `ExistingGitHubOidcProviderArn` is shared and is retained. A provider created by this stack is deleted with it. Remove any Render preview resources separately from its dashboard.
+Inspect the console to confirm EC2, EBS and network resources are gone, then remove the GitHub deployment variables. If optional GitHub deployment was enabled, an OIDC provider supplied through `ExistingGitHubOidcProviderArn` is shared and is retained. A provider created by this stack is deleted with it. With the default disabled setting, neither GitHub identity resource is created. Remove any Render preview resources separately from its dashboard.
 
 
 ## Existing SQLite data

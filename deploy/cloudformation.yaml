@@ -17,10 +17,15 @@ Parameters:
     Type: String
     Default: ghcr.io/240103126-beep/promptshelf
     AllowedPattern: 'ghcr.io/[a-z0-9-]+/[a-z0-9_.-]+'
+  EnableGitHubDeployment:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+    Description: Enable GitHub OIDC deployment only when the account permits identity providers; leave false on restricted Free projects.
   ExistingGitHubOidcProviderArn:
     Type: String
     Default: ''
-    Description: If the account already has the GitHub OIDC provider, supply its ARN to avoid creating a duplicate.
+    Description: Used only when EnableGitHubDeployment is true. Supply an existing GitHub OIDC provider ARN to avoid creating a duplicate.
   VisitorCidr:
     Type: String
     Default: 0.0.0.0/0
@@ -35,7 +40,10 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
 Conditions:
-  CreateGitHubOidc: !Equals [!Ref ExistingGitHubOidcProviderArn, '']
+  GitHubDeploymentEnabled: !Equals [!Ref EnableGitHubDeployment, 'true']
+  CreateGitHubOidc: !And
+    - !Condition GitHubDeploymentEnabled
+    - !Equals [!Ref ExistingGitHubOidcProviderArn, '']
   HasDomain: !Not [!Equals [!Ref DomainName, '']]
 Resources:
   Network:
@@ -209,6 +217,7 @@ Resources:
       ClientIdList: [sts.amazonaws.com]
   GitHubDeployRole:
     Type: AWS::IAM::Role
+    Condition: GitHubDeploymentEnabled
     Properties:
       Description: Main branch can only invoke this stack deployment document on this stack EC2 instance.
       MaxSessionDuration: 3600
@@ -250,4 +259,5 @@ Outputs:
   DeployDocument:
     Value: !Ref DeployDocument
   GitHubDeployRoleArn:
+    Condition: GitHubDeploymentEnabled
     Value: !GetAtt GitHubDeployRole.Arn
