@@ -327,5 +327,9 @@
     "themeHint": "Switch between light and dark.",
     "data": "About your data",
     "dataBody": "Items are stored through the app's data layer. With the backend connected they live in a SQLite database."
+  },
+  "items": {
+    "favorite": "Favorite {{title}}",
+    "unfavorite": "Unfavorite {{title}}"
   }
 }

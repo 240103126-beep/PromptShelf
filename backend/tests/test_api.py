@@ -108,8 +108,15 @@ def test_collection_crud_export_markdown_and_zip(client):
     r = client.post('/api/export', json={'collectionIds': [col['id']], 'format': 'zip'})
     assert r.headers['content-type'] == 'application/zip'
     with zipfile.ZipFile(io.BytesIO(r.content)) as archive:
-        assert len(archive.namelist()) == 1
-        assert 'Exportable' in archive.read(archive.namelist()[0]).decode()
+        item_files = [name for name in archive.namelist() if name != 'README.md']
+        assert len(item_files) == 1
+        markdown = archive.read(item_files[0]).decode()
+        assert markdown.startswith('---\n')
+        import yaml
+        metadata = yaml.safe_load(markdown.split('---\n')[1])
+        assert metadata['title'] == 'Exportable'
+        assert '## Prompt' in markdown
+        assert 'Renamed collection' in archive.read('README.md').decode()
     assert client.delete(f"/api/collections/{col['id']}").status_code == 204
     assert client.get(f"/api/items/{saved['id']}").json()['collectionIds'] == []
     assert client.post('/api/export', json={'collectionIds': [], 'format': 'md'}).status_code == 400

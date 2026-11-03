@@ -47,6 +47,16 @@ def build_single(collections):
 def build_zip(collections):
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        index = ["# PromptShelf export", ""]
         for c in collections:
-            z.writestr(f"{slug(c.name)}-{c.id}.md", collection_md(c))
+            folder = f"{slug(c.name)}-{c.id}"
+            index += [f"## {c.name}", "", c.description or "", ""]
+            for i in c.items:
+                filename = f"{folder}/{slug(i.title)}-{i.id}.md"
+                z.writestr(filename, item_md(i))
+                index.append(f"- [{i.title}]({filename})")
+            if not c.items:
+                index.append("_Empty collection_")
+            index.append("")
+        z.writestr("README.md", "\n".join(index))
     return buf.getvalue()
