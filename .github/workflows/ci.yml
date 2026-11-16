@@ -4,6 +4,11 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      promote_verified_run:
+        description: Successful Part II verification run ID to promote in the isolated demo. Leave blank to verify a build.
+        type: string
+        required: false
 permissions:
   contents: read
 concurrency:
@@ -11,6 +16,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   frontend:
+    if: github.event_name != 'workflow_dispatch' || inputs.promote_verified_run == ''
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,6 +34,7 @@ jobs:
         env:
           VITE_USE_MOCK: 'false'
   backend:
+    if: github.event_name != 'workflow_dispatch' || inputs.promote_verified_run == ''
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -81,15 +88,19 @@ jobs:
         run: python tests/integration/check_restart.py
       - name: Verify the Part II observability stack and both environments
         run: bash tests/observability/verify.sh
+        env:
+          ONCALL_GEMINI_API_KEY: ${{ github.event_name != 'pull_request' && secrets.ONCALL_GEMINI_API_KEY || '' }}
       - uses: docker/login-action@v3
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/assignment-2-part-ii')
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish the image that passed the tests
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: docker push "$APP_IMAGE"
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/assignment-2-part-ii')
+        run: |
+          docker push "$APP_IMAGE"
+          docker buildx imagetools inspect --format '{{.Manifest.Digest}}' "$APP_IMAGE" > test-results/observability/release-digest.txt
       - name: Collect container logs
         if: always()
         run: docker compose logs --no-color > compose.log
@@ -108,6 +119,54 @@ jobs:
         if: always()
         env:
           POSTGRES_PASSWORD: ci-local-password
+  promotion-demo:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/assignment-2-part-ii' && inputs.promote_verified_run != ''
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      packages: read
+    env:
+      VERIFIED_RUN: ${{ inputs.promote_verified_run }}
+      GH_TOKEN: ${{ github.token }}
+      IMAGE_REPOSITORY: ghcr.io/240103126-beep/promptshelf
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - name: Promote the verified dev digest to isolated production
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$VERIFIED_RUN" =~ ^[0-9]+$ ]]
+          revision=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$VERIFIED_RUN" --jq \
+            'select(.conclusion == "success" and .event == "workflow_dispatch" and .head_branch == "assignment-2-part-ii" and .path == ".github/workflows/ci.yml") | .head_sha')
+          [[ "$revision" =~ ^[0-9a-f]{40}$ ]]
+          mkdir -p "$RUNNER_TEMP/verified" test-results/promotion
+          gh run download "$VERIFIED_RUN" --name stack-test-results --dir "$RUNNER_TEMP/verified"
+          digest=$(cat "$RUNNER_TEMP/verified/test-results/observability/release-digest.txt")
+          [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]
+          image="$IMAGE_REPOSITORY@$digest"
+          docker pull "$image"
+          export PROMPTSHELF_CONFIG_DIR
+          PROMPTSHELF_CONFIG_DIR=$(mktemp -d)
+          docker network create promptshelf-telemetry
+          trap 'bash deploy/environments.sh dev down -v; bash deploy/environments.sh prod down -v' EXIT
+          for environment in dev prod; do
+            printf 'POSTGRES_PASSWORD=%s\n' "$(openssl rand -hex 20)" > "$PROMPTSHELF_CONFIG_DIR/$environment.env"
+          done
+          bash deploy/environments.sh dev up "$image"
+          curl -fsS http://127.0.0.1:8001/api/release | tee test-results/promotion/dev.json | jq -e --arg rev "$revision" --arg image "$image" '.environment == "dev" and .version == $rev and .image == $image'
+          bash deploy/environments.sh prod up "$image"
+          curl -fsS http://127.0.0.1:8002/api/release | tee test-results/promotion/prod.json | jq -e --arg rev "$revision" --arg image "$image" '.environment == "prod" and .version == $rev and .image == $image'
+          printf 'Promoted `%s` from development to isolated production. Source run `%s`.\n' "$image" "$VERIFIED_RUN" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: promotion-evidence
+          path: test-results/promotion/
   deploy-render:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.RENDER_DEPLOY_ENABLED == 'true'
     needs: stack
