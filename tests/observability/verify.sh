@@ -13,12 +13,18 @@ export PROMPTSHELF_PROJECT_PREFIX="promptshelf-check-$(openssl rand -hex 4)"
 export PROMPTSHELF_TELEMETRY_NETWORK="$PROMPTSHELF_PROJECT_PREFIX"
 export GRAFANA_PORT=13000 OTEL_PORT=14318
 monitor=(docker compose -p "$PROMPTSHELF_PROJECT_PREFIX-observability" -f observability/compose.yaml)
+provider=gemini
+if [[ -z "${ONCALL_GEMINI_API_KEY:-}" ]]; then
+  provider=qwen-local
+  export ONCALL_LOCAL_MODEL_URL=http://model:8080
+  monitor+=(--profile local-model)
+fi
 evidence=test-results/observability
 mkdir -p "$evidence"
 cleanup() {
   result=$?
   if (( result != 0 )); then
-    "${monitor[@]}" logs --no-color > "$evidence/services.log" 2>&1 || true
+    "${monitor[@]}" logs --no-color --tail 100 2>&1 | tee "$evidence/services.log" >&2 || true
   fi
   bash deploy/environments.sh dev down -v 2>/dev/null || true
   bash deploy/environments.sh prod down -v 2>/dev/null || true
@@ -83,8 +89,8 @@ incident_found() {
     jq -e 'map(select(.environment == "dev")) | select(length > 0)'
 }
 retry incident_found > "$evidence/incidents.json"
-if [[ -n "${ONCALL_GEMINI_API_KEY:-}" ]]; then
-  model_report_found() { incident_found | jq -e 'map(select(.report.provider == "gemini")) | select(length > 0)'; }
-  retry model_report_found > "$evidence/gemini-report.json"
-fi
-echo 'Verified separate databases, the same image, all three OTLP signals and on-call webhook delivery.'
+model_report_found() {
+  incident_found | jq -e --arg provider "$provider" 'map(select(.report.provider == $provider)) | select(length > 0)'
+}
+retry model_report_found > "$evidence/model-report.json"
+echo 'Verified separate databases, the same image, all three OTLP signals and a model-generated on-call report.'
