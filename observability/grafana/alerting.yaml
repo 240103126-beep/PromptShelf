@@ -55,14 +55,8 @@ contactPoints:
 
 policies:
   - orgId: 1
-    receiver: grafana-default-email
-    group_by: [grafana_folder, alertname]
-    routes:
-      - receiver: PromptShelf on-call
-        object_matchers:
-          - [service, '=', promptshelf-api]
-          - [operation, '=', save_prompt]
-        group_by: [alertname, deployment_environment, service_version]
-        group_wait: 5s
-        group_interval: 30s
-        repeat_interval: 4h
+    receiver: PromptShelf on-call
+    group_by: [alertname, deployment_environment, service_version]
+    group_wait: 5s
+    group_interval: 30s
+    repeat_interval: 4h
