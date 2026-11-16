@@ -4,6 +4,7 @@ import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+from fastapi.concurrency import run_in_threadpool
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -17,6 +18,7 @@ from .export import build_single, build_zip
 from .models import Category, Collection, Item, Tag, now
 from .schemas import *
 from .seed import seed
+from .telemetry import configure_telemetry, release_info
 
 
 @asynccontextmanager
@@ -31,7 +33,11 @@ async def lifespan(app):
         empty = not any(db.scalar(select(func.count(model.id))) for model in (Item, Tag, Category, Collection))
         if empty and os.getenv('SEED', '1') == '1':
             seed(db)
-    yield
+    try:
+        yield
+    finally:
+        if shutdown := getattr(app.state, 'shutdown_telemetry', None):
+            await run_in_threadpool(shutdown)
 
 
 app = FastAPI(title='PromptShelf API', version='2.0.0', lifespan=lifespan)
@@ -98,6 +104,11 @@ def apply_item(item, data, db):
 def health(db: Session = Depends(get_db)):
     db.execute(text('SELECT 1'))
     return {'status': 'ok'}
+
+
+@app.get('/api/release', include_in_schema=False)
+def release():
+    return release_info()
 
 
 @app.get('/api/items', response_model=list[ItemOut])
@@ -421,3 +432,6 @@ if _static.is_dir():
         if candidate.is_relative_to(_static) and candidate.is_file():
             return FileResponse(candidate)
         return FileResponse(_static / 'index.html')
+
+
+configure_telemetry(app)

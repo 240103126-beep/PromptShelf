@@ -1,0 +1,175 @@
+{
+  "title": "PromptShelf Operations",
+  "uid": "promptshelf-ops",
+  "tags": [
+    "PromptShelf",
+    "OpenTelemetry"
+  ],
+  "schemaVersion": 39,
+  "version": 1,
+  "timezone": "browser",
+  "refresh": "10s",
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "environment",
+        "label": "Environment",
+        "type": "query",
+        "query": "label_values(promptshelf_operations_total, deployment_environment)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "refresh": 2,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "version",
+        "label": "Version",
+        "type": "query",
+        "query": "label_values(promptshelf_operations_total{deployment_environment=~\"$environment\"}, service_version)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "refresh": 2,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Successful PromptShelf operations · 5 minutes",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (operation, deployment_environment) (increase(promptshelf_operations_total{deployment_environment=~\"$environment\",service_version=~\"$version\",outcome=\"success\"}[5m]))",
+          "legendFormat": "{{operation}} · {{deployment_environment}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Prompt save failures · 2 minutes",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (deployment_environment, service_version) (increase(promptshelf_operations_total{deployment_environment=~\"$environment\",service_version=~\"$version\",operation=\"save_prompt\",outcome=\"server_error\"}[2m]))",
+          "legendFormat": "{{deployment_environment}} · {{service_version}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Prompt saves and imports · 5 minutes",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (operation, deployment_environment) (increase(promptshelf_operations_total{deployment_environment=~\"$environment\",service_version=~\"$version\",operation=~\"save_prompt|import_prompts\",outcome=\"success\"}[5m]))",
+          "legendFormat": "{{operation}} · {{deployment_environment}}"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "95th percentile operation duration",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le, operation, deployment_environment) (rate(promptshelf_operation_duration_seconds_bucket{deployment_environment=~\"$environment\",service_version=~\"$version\"}[5m])))",
+          "legendFormat": "{{operation}} · {{deployment_environment}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 5,
+      "type": "logs",
+      "title": "Application operation logs",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{service_name=\"promptshelf-api\"} | deployment_environment=~\"$environment\" | service_version=~\"$version\""
+        }
+      ]
+    }
+  ]
+}

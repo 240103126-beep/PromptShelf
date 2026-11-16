@@ -1,0 +1,5 @@
+# Copy to .environments/dev.env and .environments/prod.env.
+# Set a different randomly generated alphanumeric password in each file.
+POSTGRES_PASSWORD=replace-with-a-random-password
+# For a public host, choose the address and port explicitly.
+# APP_PORT=127.0.0.1:8001

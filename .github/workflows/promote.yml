@@ -1,0 +1,85 @@
+name: Promote development image to production
+on:
+  workflow_dispatch:
+    inputs:
+      revision:
+        description: Full SHA shown at the healthy development /api/release
+        type: string
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+  packages: write
+
+concurrency:
+  group: promptshelf-production
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    environment:
+      name: production
+      url: ${{ vars.PRODUCTION_URL }}
+    env:
+      DEVELOPMENT_URL: ${{ vars.DEVELOPMENT_URL }}
+      PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+      IMAGE_REPOSITORY: ghcr.io/240103126-beep/promptshelf
+      REVISION: ${{ inputs.revision }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - name: Verify the running development image passed CI
+        id: verify
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${DEVELOPMENT_URL:?Set repository Actions variable DEVELOPMENT_URL}"
+          : "${PRODUCTION_URL:?Set repository Actions variable PRODUCTION_URL}"
+          [[ "$REVISION" =~ ^[0-9a-f]{40}$ ]]
+          gh api --method GET "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs" \
+            -f branch=main -f event=push -f status=success -f head_sha="$REVISION" \
+            --jq '.total_count' | grep -Eq '^[1-9][0-9]*$'
+          dev=${DEVELOPMENT_URL%/}
+          curl --fail --silent --show-error --max-time 20 "$dev/api/health" | jq -e '.status == "ok"'
+          release=$(curl --fail --silent --show-error --max-time 20 "$dev/api/release")
+          image=$(jq -er --arg rev "$REVISION" \
+            'select(.environment == "dev" and .version == $rev) | .image' <<<"$release")
+          digest=$(docker buildx imagetools inspect --format '{{.Manifest.Digest}}' "$IMAGE_REPOSITORY:$REVISION")
+          [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ && "$image" == "$IMAGE_REPOSITORY@$digest" ]]
+          printf 'digest=%s\n' "$digest" >> "$GITHUB_OUTPUT"
+      - name: Promote the identical registry manifest
+        env:
+          DIGEST: ${{ steps.verify.outputs.digest }}
+        run: |
+          docker buildx imagetools create --prefer-index=false \
+            --tag "$IMAGE_REPOSITORY:production" "$IMAGE_REPOSITORY@$DIGEST"
+          published=$(docker buildx imagetools inspect --format '{{.Manifest.Digest}}' "$IMAGE_REPOSITORY:production")
+          test "$published" = "$DIGEST"
+      - name: Wait for the production host to deploy and verify the release
+        env:
+          DIGEST: ${{ steps.verify.outputs.digest }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          prod=${PRODUCTION_URL%/}
+          for attempt in $(seq 1 35); do
+            if curl -fsS --max-time 8 "$prod/api/release" | jq -e --arg rev "$REVISION" \
+              --arg image "$IMAGE_REPOSITORY@$DIGEST" \
+              '.environment == "prod" and .version == $rev and .image == $image' >/dev/null \
+              && curl -fsS --max-time 8 "$prod/api/health" | jq -e '.status == "ok"'; then
+              printf 'Production: %s (%s)\n' "$REVISION" "$DIGEST" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo 'The production host did not report the promoted image.' >&2
+          exit 1

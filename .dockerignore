@@ -11,3 +11,6 @@
 playwright-report
 test-results
 e2e
+
+.environments/
+observability/.env

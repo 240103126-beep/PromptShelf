@@ -1,0 +1,10 @@
+services:
+  app:
+    networks: [default, telemetry]
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://lgtm:4318
+      APP_IMAGE_REFERENCE: ${APP_IMAGE}
+networks:
+  telemetry:
+    external: true
+    name: ${PROMPTSHELF_TELEMETRY_NETWORK:-promptshelf-telemetry}

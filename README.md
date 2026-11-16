@@ -76,6 +76,8 @@ Playwright scenarios and their feature coverage are in `e2e/`. GitHub Actions is
 
 ## Deployment
 
+See the [Assignment 2 Part II guide](docs/assignment-2-part-ii.md) for dev and prod, release promotion, Grafana and the on-call demonstration.
+
 See [deployment instructions](docs/deployment.md) for the optional free Render preview and the AWS CloudFormation + Compose deployment, GitHub OIDC setup, health checks, rollback and cleanup. Cloud configurations are preparation only until an account owner creates the resources and records their deployed URL.
 
 This is a single-user coursework app without authentication. A public demo should contain only sample prompts. Do not store private chats, tokens or personal data in a public deployment.

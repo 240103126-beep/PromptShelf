@@ -1,0 +1,68 @@
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: PromptShelf operations
+    folder: PromptShelf
+    interval: 10s
+    rules:
+      - uid: ps-save-failures
+        title: Repeated prompt save failures
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange: { from: 180, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              instant: true
+              range: false
+              expr: sum by (deployment_environment, service_version) (increase(promptshelf_operations_total{operation="save_prompt",outcome="server_error"}[2m]))
+          - refId: B
+            relativeTimeRange: { from: 0, to: 0 }
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              datasource: { type: __expr__, uid: __expr__ }
+              conditions:
+                - evaluator: { type: gt, params: [4.99] }
+                  operator: { type: and }
+                  query: { params: [B] }
+                  reducer: { type: last, params: [] }
+        noDataState: OK
+        execErrState: Error
+        for: 20s
+        annotations:
+          summary: Five or more prompt saves failed within two minutes.
+          __dashboardUid__: promptshelf-ops
+          __panelId__: '2'
+        labels:
+          service: promptshelf-api
+          owner: PromptShelf team
+          severity: warning
+          operation: save_prompt
+contactPoints:
+  - orgId: 1
+    name: PromptShelf on-call
+    receivers:
+      - uid: promptshelf-oncall
+        type: webhook
+        disableResolveMessage: true
+        settings:
+          url: http://oncall:8000/alerts
+          httpMethod: POST
+
+policies:
+  - orgId: 1
+    receiver: grafana-default-email
+    group_by: [grafana_folder, alertname]
+    routes:
+      - receiver: PromptShelf on-call
+        object_matchers:
+          - [service, '=', promptshelf-api]
+          - [operation, '=', save_prompt]
+        group_by: [alertname, deployment_environment, service_version]
+        group_wait: 5s
+        group_interval: 30s
+        repeat_interval: 4h
