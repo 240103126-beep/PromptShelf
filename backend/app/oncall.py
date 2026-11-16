@@ -1,4 +1,4 @@
-"""Receive Grafana alerts and persist a Gemini triage report for each incident."""
+"""Receive Grafana alerts and persist a model-generated triage report."""
 
 import asyncio
 from contextlib import asynccontextmanager, closing, suppress
@@ -21,6 +21,18 @@ SYSTEM = (
     'evidence and next_checks. Distinguish observations from hypotheses. Suggest at most '
     'three checks and say when a human should investigate. Never claim to have applied a fix.'
 )
+REPORT_SCHEMA = {
+    'type': 'object',
+    'properties': {
+        'severity': {'type': 'string', 'enum': ['warning', 'critical', 'info']},
+        'summary': {'type': 'string'},
+        'likely_cause': {'type': 'string'},
+        'evidence': {'type': 'array', 'items': {'type': 'string'}, 'maxItems': 3},
+        'next_checks': {'type': 'array', 'items': {'type': 'string'}, 'maxItems': 3},
+    },
+    'required': ['severity', 'summary', 'likely_cause', 'evidence', 'next_checks'],
+    'additionalProperties': False,
+}
 
 
 def connect():
@@ -65,7 +77,9 @@ def collect_evidence(incident):
 
 
 def analyze_pending():
-    if not os.getenv('GEMINI_API_KEY', '').strip():
+    local_url = os.getenv('ONCALL_LOCAL_MODEL_URL', '').rstrip('/')
+    gemini_configured = bool(os.getenv('GEMINI_API_KEY', '').strip())
+    if not gemini_configured and not local_url:
         return
     with closing(connect()) as database:
         incident = database.execute(
@@ -79,12 +93,30 @@ def analyze_pending():
             database.execute('UPDATE incidents SET retry_at = ? WHERE id = ?', (time.time() + 90, incident['id']))
         context = {key: incident[key] for key in ('environment', 'version', 'summary', 'starts_at')}
         context['telemetry'] = collect_evidence(incident)
-        report = ai._json(ai._llm(SYSTEM, json.dumps(context), json_mode=True))
-        required = {'severity', 'summary', 'likely_cause', 'evidence', 'next_checks'}
-        if not isinstance(report, dict) or not required.issubset(report):
+        if gemini_configured:
+            provider = 'gemini'
+            answer = ai._llm(SYSTEM, json.dumps(context), json_mode=True)
+        else:
+            provider = 'qwen-local'
+            response = httpx.post(f'{local_url}/v1/chat/completions', json={
+                'messages': [
+                    {'role': 'system', 'content': SYSTEM},
+                    {'role': 'user', 'content': json.dumps(context)},
+                ],
+                'response_format': {
+                    'type': 'json_schema',
+                    'json_schema': {'name': 'triage_report', 'schema': REPORT_SCHEMA},
+                },
+                'temperature': 0,
+                'max_tokens': 350,
+            }, timeout=75)
+            response.raise_for_status()
+            answer = response.json()['choices'][0]['message']['content']
+        report = ai._json(answer)
+        if not isinstance(report, dict) or not set(REPORT_SCHEMA['required']).issubset(report):
             LOG.warning('On-call model did not return a report for %s. It will retry.', incident['id'])
             return
-        output = json.dumps({**context, 'provider': 'gemini', 'report': report}, ensure_ascii=False)
+        output = json.dumps({**context, 'provider': provider, 'report': report}, ensure_ascii=False)
         with database:
             database.execute('UPDATE incidents SET report = ? WHERE id = ?', (output, incident['id']))
         LOG.info('On-call report %s: %s', incident['id'], output)
@@ -128,7 +160,8 @@ app = FastAPI(lifespan=lifespan)
 
 @app.get('/health')
 def health():
-    return {'status': 'ok', 'model_configured': bool(os.getenv('GEMINI_API_KEY', '').strip())}
+    configured = os.getenv('GEMINI_API_KEY', '').strip() or os.getenv('ONCALL_LOCAL_MODEL_URL', '').strip()
+    return {'status': 'ok', 'model_configured': bool(configured)}
 
 
 @app.get('/incidents')
