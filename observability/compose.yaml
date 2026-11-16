@@ -6,6 +6,9 @@ services:
       - '127.0.0.1:${GRAFANA_PORT:-3000}:3000'
       - '127.0.0.1:${OTEL_PORT:-4318}:4318'
     environment:
+      ENABLE_LOGS_GRAFANA: 'true'
+      GF_LOG_LEVEL: warn
+      GF_AUTH_ANONYMOUS_ENABLED: 'false'
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD}
       GF_ANALYTICS_REPORTING_ENABLED: 'false'
     volumes:
