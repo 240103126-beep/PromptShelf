@@ -25,14 +25,25 @@ services:
     environment:
       GEMINI_API_KEY: ${ONCALL_GEMINI_API_KEY:-}
       GEMINI_MODEL: ${ONCALL_GEMINI_MODEL:-gemini-2.5-flash}
+      ONCALL_LOCAL_MODEL_URL: ${ONCALL_LOCAL_MODEL_URL:-}
       ONCALL_DB: /app/data/incidents.db
       GRAFANA_URL: http://lgtm:3000
       GRAFANA_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
     volumes:
       - incident-data:/app/data
+  model:
+    image: ghcr.io/ggml-org/llama.cpp:server
+    profiles: [local-model]
+    command: [--host, 0.0.0.0, --port, '8080', --ctx-size, '2048', --threads, '2',
+      -hf, 'Qwen/Qwen2.5-1.5B-Instruct-GGUF:Q4_K_M']
+    environment:
+      LLAMA_CACHE: /models
+    volumes:
+      - model-data:/models
 networks:
   telemetry:
     name: ${PROMPTSHELF_TELEMETRY_NETWORK:-promptshelf-telemetry}
 volumes:
   telemetry-data:
   incident-data:
+  model-data:
